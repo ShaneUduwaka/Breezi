@@ -23,10 +23,10 @@ RUN pip install --no-cache-dir \
     google-cloud-storage
 
 WORKDIR /app
-COPY pipeline.py .
+COPY dataset_builder.py .
 
 # Define mount points
 VOLUME /data/raw_audio
 VOLUME /data/final_transcripts
 
-ENTRYPOINT ["python", "pipeline.py"]
+ENTRYPOINT ["python", "dataset_builder.py"]
