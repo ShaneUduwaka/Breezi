@@ -9,12 +9,10 @@ RUN apt-get update && apt-get install -y \
     libsndfile1 \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Install PyTorch (CPU) - Step A
-# Only looks at the PyTorch repository
+# 2. Install PyTorch (CPU)
 RUN pip install --no-cache-dir torch torchaudio --index-url https://download.pytorch.org/whl/cpu
 
-# 3. Install Other Deps - Step B
-# Looks at the standard PyPI repository
+# 3. Install Other Deps
 RUN pip install --no-cache-dir \
     silero-vad \
     soundfile \
@@ -23,10 +21,11 @@ RUN pip install --no-cache-dir \
     google-cloud-storage
 
 WORKDIR /app
-COPY dataset_builder.py .
+COPY . .
 
 # Define mount points
 VOLUME /data/raw_audio
-VOLUME /data/final_transcripts
+VOLUME /data/json_transcripts
+VOLUME /data/final_dataset
 
-ENTRYPOINT ["python", "dataset_builder.py"]
+ENTRYPOINT ["python", "main.py"]
