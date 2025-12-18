@@ -1,121 +1,172 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { FaCheck } from "react-icons/fa";
-
-const plans = [
-  {
-    name: "Starter",
-    price: "$49",
-    period: "/mo",
-    description: "Perfect for small businesses just getting started.",
-    features: [
-      "1 AI Voice Agent",
-      "500 Minutes/month",
-      "Standard English Voice",
-      "Email Support",
-      "Basic Analytics"
-    ],
-    cta: "Start Free Trial",
-    popular: false,
-  },
-  {
-    name: "Pro",
-    price: "$149",
-    period: "/mo",
-    description: "For growing teams that need more power and flexibility.",
-    features: [
-      "3 AI Voice Agents",
-      "2,000 Minutes/month",
-      "Multilingual (Sinhala & English)",
-      "Priority Support",
-      "Advanced Analytics",
-      "CRM Integration"
-    ],
-    cta: "Get Started",
-    popular: true,
-  },
-  {
-    name: "Enterprise",
-    price: "Custom",
-    period: "",
-    description: "Full-scale solutions for large organizations.",
-    features: [
-      "Unlimited Agents",
-      "Unlimited Minutes",
-      "Custom Voice Cloning",
-      "Dedicated Account Manager",
-      "On-premise Deployment",
-      "SLA Guarantee"
-    ],
-    cta: "Contact Sales",
-    popular: false,
-  },
-];
+import {
+  FaRobot,
+  FaInfinity,
+  FaMicrophone,
+  FaHandshake,
+  FaChartBar,
+  FaShieldAlt,
+} from "react-icons/fa";
 
 export default function Pricing() {
   return (
-    <section id="pricing" className="py-24 bg-[#050509] relative">
+    <section
+      id="pricing"
+      className="py-24 bg-[#050509] relative border-t border-white/5"
+    >
       <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
-            Simple, Transparent <span className="text-purple-400">Pricing</span>
-          </h2>
-          <p className="text-gray-400 max-w-2xl mx-auto">
-            Choose the plan that fits your business needs. No hidden fees.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-          {plans.map((plan, index) => (
-            <motion.div
-              key={plan.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
-              className={`relative p-8 rounded-2xl border ${
-                plan.popular 
-                  ? "bg-white/10 border-purple-500 shadow-[0_0_30px_rgba(168,85,247,0.15)]" 
-                  : "bg-white/5 border-white/10"
-              } backdrop-blur-sm flex flex-col h-full`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
-                  Most Popular
-                </div>
-              )}
-
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold text-white mb-2">{plan.name}</h3>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">{plan.price}</span>
-                  <span className="text-gray-400">{plan.period}</span>
-                </div>
-                <p className="text-gray-400 text-sm mt-4">{plan.description}</p>
-              </div>
-
-              <ul className="space-y-4 mb-8 flex-1">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-3 text-gray-300 text-sm">
-                    <FaCheck className="text-green-400 mt-1 shrink-0" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <button 
-                className={`w-full py-3 rounded-lg font-medium transition-all duration-300 ${
-                  plan.popular
-                    ? "bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-600/25"
-                    : "bg-white/10 hover:bg-white/20 text-white"
-                }`}
-              >
-                {plan.cta}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+          <div className="max-w-2xl">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">
+              One Simple,{" "}
+              <span className="text-purple-400">All-Inclusive Plan</span>
+            </h2>
+            <p className="text-gray-400 text-lg leading-relaxed">
+              Experience the full power of Breezi without limits. We've
+              simplified our pricing to give you everything you need to scale.
+            </p>
+          </div>
+          <div>
+            <Link href="/contact">
+              <button className="px-6 py-3 bg-white text-black font-semibold rounded-full hover:bg-gray-200 transition-colors duration-300">
+                Get Started
               </button>
-            </motion.div>
-          ))}
+            </Link>
+          </div>
         </div>
+
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={{
+            visible: { transition: { staggerChildren: 0.1 } },
+          }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+        >
+          {/* Feature 1 */}
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 },
+            }}
+            className="group p-6 rounded-2xl bg-white/2 border border-white/5 hover:border-white/10 transition-colors duration-300"
+          >
+            <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mb-5 group-hover:bg-purple-500/20 transition-colors">
+              <FaRobot className="text-purple-400 text-xl" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">
+              Unlimited Agents
+            </h3>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              Deploy as many AI voice agents as you need to handle simultaneous
+              calls without any concurrent limits.
+            </p>
+          </motion.div>
+
+          {/* Feature 2 */}
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 },
+            }}
+            className="group p-6 rounded-2xl bg-white/2 border border-white/5 hover:border-white/10 transition-colors duration-300"
+          >
+            <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-5 group-hover:bg-blue-500/20 transition-colors">
+              <FaInfinity className="text-blue-400 text-xl" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">
+              Unlimited Minutes
+            </h3>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              No metering or overage fees. Talk as much as your business
+              requires with a flat, predictable rate.
+            </p>
+          </motion.div>
+
+          {/* Feature 3 */}
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 },
+            }}
+            className="group p-6 rounded-2xl bg-white/2 border border-white/5 hover:border-white/10 transition-colors duration-300"
+          >
+            <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center mb-5 group-hover:bg-green-500/20 transition-colors">
+              <FaMicrophone className="text-green-400 text-xl" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">
+              Custom Voice Cloning
+            </h3>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              Clone your own voice or create a unique brand persona that
+              represents your company perfectly.
+            </p>
+          </motion.div>
+
+          {/* Feature 4 */}
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 },
+            }}
+            className="group p-6 rounded-2xl bg-white/2 border border-white/5 hover:border-white/10 transition-colors duration-300"
+          >
+            <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center mb-5 group-hover:bg-orange-500/20 transition-colors">
+              <FaHandshake className="text-orange-400 text-xl" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">
+              CRM Integration
+            </h3>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              Seamlessly syncs with Salesforce, HubSpot, and Zoho to keep your
+              customer records always up to date.
+            </p>
+          </motion.div>
+
+          {/* Feature 5 */}
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 },
+            }}
+            className="group p-6 rounded-2xl bg-white/2 border border-white/5 hover:border-white/10 transition-colors duration-300"
+          >
+            <div className="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center mb-5 group-hover:bg-pink-500/20 transition-colors">
+              <FaChartBar className="text-pink-400 text-xl" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">
+              Real-time Insights
+            </h3>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              Get deep insights into call sentiment, resolution rates, and agent
+              performance with our dashboard.
+            </p>
+          </motion.div>
+
+          {/* Feature 6 */}
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 },
+            }}
+            className="group p-6 rounded-2xl bg-white/2 border border-white/5 hover:border-white/10 transition-colors duration-300"
+          >
+            <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center mb-5 group-hover:bg-teal-500/20 transition-colors">
+              <FaShieldAlt className="text-teal-400 text-xl" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">
+              99.9% Uptime SLA
+            </h3>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              Enterprise-grade reliability with financially backed service level
+              agreements for peace of mind.
+            </p>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );

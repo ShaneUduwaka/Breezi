@@ -12,7 +12,8 @@ export default function Footer() {
               Breezi
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed">
-              The advanced AI Voice Agent platform for modern enterprises. Automate, scale, and delight.
+              The advanced AI Voice Agent platform for modern enterprises.
+              Automate, scale, and delight.
             </p>
           </div>
 
@@ -20,10 +21,38 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-6">Product</h4>
             <ul className="space-y-4 text-sm text-gray-400">
-              <li><Link href="#" className="hover:text-white transition-colors">Features</Link></li>
-              <li><Link href="#" className="hover:text-white transition-colors">Integrations</Link></li>
-              <li><Link href="#" className="hover:text-white transition-colors">Pricing</Link></li>
-              <li><Link href="#" className="hover:text-white transition-colors">Changelog</Link></li>
+              <li>
+                <Link
+                  href="#features"
+                  className="hover:text-white transition-colors"
+                >
+                  Features
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="#how-it-works"
+                  className="hover:text-white transition-colors"
+                >
+                  Integrations
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="#industries"
+                  className="hover:text-white transition-colors"
+                >
+                  Industries
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="#pricing"
+                  className="hover:text-white transition-colors"
+                >
+                  Plan
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -31,10 +60,26 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-6">Company</h4>
             <ul className="space-y-4 text-sm text-gray-400">
-              <li><Link href="#" className="hover:text-white transition-colors">About Us</Link></li>
-              <li><Link href="#" className="hover:text-white transition-colors">Careers</Link></li>
-              <li><Link href="#" className="hover:text-white transition-colors">Blog</Link></li>
-              <li><Link href="#" className="hover:text-white transition-colors">Contact</Link></li>
+              <li>
+                <Link href="#" className="hover:text-white transition-colors">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:text-white transition-colors">
+                  Careers
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:text-white transition-colors">
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:text-white transition-colors">
+                  Contact
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -42,9 +87,21 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-6">Legal</h4>
             <ul className="space-y-4 text-sm text-gray-400">
-              <li><Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-              <li><Link href="#" className="hover:text-white transition-colors">Terms of Service</Link></li>
-              <li><Link href="#" className="hover:text-white transition-colors">Security</Link></li>
+              <li>
+                <Link href="#" className="hover:text-white transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:text-white transition-colors">
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:text-white transition-colors">
+                  Security
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
@@ -54,10 +111,18 @@ export default function Footer() {
             © {new Date().getFullYear()} Breezi AI. All rights reserved.
           </p>
           <div className="flex items-center gap-6 text-gray-400">
-            <a href="#" className="hover:text-white transition-colors"><FaTwitter size={20} /></a>
-            <a href="#" className="hover:text-white transition-colors"><FaLinkedin size={20} /></a>
-            <a href="#" className="hover:text-white transition-colors"><FaGithub size={20} /></a>
-            <a href="#" className="hover:text-white transition-colors"><FaInstagram size={20} /></a>
+            <a href="#" className="hover:text-white transition-colors">
+              <FaTwitter size={20} />
+            </a>
+            <a href="#" className="hover:text-white transition-colors">
+              <FaLinkedin size={20} />
+            </a>
+            <a href="#" className="hover:text-white transition-colors">
+              <FaGithub size={20} />
+            </a>
+            <a href="#" className="hover:text-white transition-colors">
+              <FaInstagram size={20} />
+            </a>
           </div>
         </div>
       </div>
