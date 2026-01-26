@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'Breezi AI - Unburden Your Staff, Elevate Service',
-  description: 'Advanced AI Call Agent for seamless customer service and operational efficiency.',
+  description: 'Advanced AI Call Agent for seamless customer service and operational efficiency..',
 };
 
 export default function RootLayout({
