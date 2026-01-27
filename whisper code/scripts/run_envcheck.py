@@ -1,4 +1,4 @@
-import envcheck
+import env_check
 
 if __name__ == "__main__":
-    envcheck.check_environment()
+    env_check.check_environment()

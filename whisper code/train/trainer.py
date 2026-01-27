@@ -1,5 +1,6 @@
 import os, json
 from datasets import load_from_disk
+import torch
 from transformers import (
     WhisperForConditionalGeneration, 
     WhisperProcessor, 
@@ -21,7 +22,7 @@ def run_training(local_path, config_path="configs/training_args.json"):
     processor = WhisperProcessor.from_pretrained("openai/whisper-large-v3")
     model = WhisperForConditionalGeneration.from_pretrained(
         "openai/whisper-large-v3",
-        torch_dtype="bfloat16",
+        torch_dtype=torch.bfloat16,
         attn_implementation="flash_attention_2"
     )
     model.config.forced_decoder_ids = None
