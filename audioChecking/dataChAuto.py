@@ -8,7 +8,7 @@ df = pd.read_csv("dataset3.tsv", sep="\t")
 for i in range (3955,5230):
     tempPath = df.iloc[i,0]
 
-    client = genai.Client(api_key="AIzaSyD5F0VCjS31e60e6igV0yzX3yiMGpFFnpo")
+    client = genai.Client(api_key="#")
 
     audio_file = client.files.upload(file=tempPath)
 
