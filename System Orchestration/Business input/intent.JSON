@@ -1,0 +1,250 @@
+{
+  "engine_version": "1.0",
+  "intents": {
+
+    "global_browse": {
+      "description": "General browsing domain for informational queries",
+      "hierarchy": { "parent": null, "children": ["view_menu", "view_promotions", "view_locations", "view_hours"] },
+      "slots": {},
+      "transitions": {
+        "can_branch_to": ["view_menu", "view_promotions", "view_locations", "view_hours"],
+        "can_replace_with": []
+      },
+      "handler": null
+    },
+
+    "view_menu": {
+      "description": "Show menu items or specific menu info",
+      "hierarchy": { "parent": "global_browse", "children": ["view_menu_category", "view_menu_item"] },
+      "slots": {},
+      "transitions": {
+        "can_branch_to": ["view_menu_category", "view_menu_item"],
+        "can_replace_with": []
+      },
+      "handler": "handle_view_menu_overview"
+    },
+
+    "view_menu_category": {
+      "description": "Show items by category",
+      "hierarchy": { "parent": "view_menu", "children": [] },
+      "slots": {
+        "category": {
+          "type": "string",
+          "required": true,
+          "prompt": "Which category are you interested in (e.g., buckets, burgers, sides)?",
+          "reprompt": "Please tell me the category you want to browse."
+        }
+      },
+      "transitions": { "can_branch_to": [], "can_replace_with": [] },
+      "handler": "handle_view_menu_by_category"
+    },
+
+    "view_menu_item": {
+      "description": "Show details about a specific item",
+      "hierarchy": { "parent": "view_menu", "children": [] },
+      "slots": {
+        "item_name": {
+          "type": "string",
+          "required": true,
+          "prompt": "Which menu item would you like details for?",
+          "reprompt": "Please tell me the item name you want information about."
+        }
+      },
+      "transitions": { "can_branch_to": [], "can_replace_with": [] },
+      "handler": "handle_view_menu_item"
+    },
+
+    "view_promotions": {
+      "description": "Show current promotions, deals, vouchers",
+      "hierarchy": { "parent": "global_browse", "children": [] },
+      "slots": {},
+      "transitions": { "can_branch_to": [], "can_replace_with": [] },
+      "handler": "handle_view_promotions"
+    },
+
+    "view_locations": {
+      "description": "Provide store locations",
+      "hierarchy": { "parent": "global_browse", "children": [] },
+      "slots": {
+        "location_query": {
+          "type": "string",
+          "required": false,
+          "prompt": "Where are you looking for a store location?",
+          "reprompt": "Please tell me the city or area you want to find stores in."
+        }
+      },
+      "transitions": { "can_branch_to": [], "can_replace_with": [] },
+      "handler": "handle_view_locations"
+    },
+
+    "view_hours": {
+      "description": "Business opening hours",
+      "hierarchy": { "parent": "global_browse", "children": [] },
+      "slots": {},
+      "transitions": { "can_branch_to": [], "can_replace_with": [] },
+      "handler": "handle_view_hours"
+    },
+
+    "order_flow": {
+      "description": "Top-level order handling domain",
+      "hierarchy": { "parent": null, "children": ["start_order", "modify_order", "cancel_order", "track_order"] },
+      "slots": {},
+      "transitions": {
+        "can_branch_to": ["view_menu","view_promotions"],
+        "can_replace_with": []
+      },
+      "handler": null
+    },
+
+    "start_order": {
+      "description": "Initiate a new order",
+      "hierarchy": { "parent": "order_flow", "children": [] },
+      "slots": {
+        "order_type": {
+          "type": "enum",
+          "required": true,
+          "allowed_values": ["delivery", "pickup"],
+          "prompt": "Is this for delivery or pickup?",
+          "reprompt": "Please say delivery or pickup."
+        },
+        "delivery_address": {
+          "type": "string",
+          "required": false,
+          "prompt": "What is your delivery address?",
+          "reprompt": "Please tell me where we should deliver the order.",
+          "dependencies": ["order_type"]
+        },
+        "order_items": {
+          "type": "list<string>",
+          "required": true,
+          "prompt": "What items would you like to order?",
+          "reprompt": "Please tell me the items you want to include in your order."
+        },
+        "quantity_per_item": {
+          "type": "number",
+          "required": true,
+          "prompt": "How many of each item?",
+          "reprompt": "Please tell me quantities for each item."
+        }
+      },
+      "transitions": {
+        "can_branch_to": ["view_menu", "view_promotions"],
+        "can_replace_with": ["cancel_order"]
+      },
+      "handler": "handle_start_order"
+    },
+
+    "modify_order": {
+      "description": "Modify an existing order before it's finalized",
+      "hierarchy": { "parent": "order_flow", "children": [] },
+      "slots": {
+        "order_id": {
+          "type": "string",
+          "required": true,
+          "prompt": "What is your order ID?",
+          "reprompt": "Please tell me the order ID you want to modify."
+        },
+        "change_request": {
+          "type": "string",
+          "required": true,
+          "prompt": "What would you like to change?",
+          "reprompt": "Please describe your modification request."
+        }
+      },
+      "transitions": {
+        "can_branch_to": ["view_menu"],
+        "can_replace_with": ["cancel_order"]
+      },
+      "handler": "handle_modify_order"
+    },
+
+    "cancel_order": {
+      "description": "Cancel an existing order",
+      "hierarchy": { "parent": "order_flow", "children": [] },
+      "slots": {
+        "order_id": {
+          "type": "string",
+          "required": true,
+          "prompt": "Please provide your order ID to cancel.",
+          "reprompt": "I didn't catch the order ID. Can you repeat it?"
+        }
+      },
+      "transitions": { "can_branch_to": [], "can_replace_with": [] },
+      "handler": "handle_cancel_order"
+    },
+
+    "track_order": {
+      "description": "Track the status of an order",
+      "hierarchy": { "parent": "order_flow", "children": [] },
+      "slots": {
+        "order_id": {
+          "type": "string",
+          "required": true,
+          "prompt": "What is your order ID you want to track?",
+          "reprompt": "Please say the order ID to track."
+        }
+      },
+      "transitions": { "can_branch_to": [], "can_replace_with": [] },
+      "handler": "handle_track_order"
+    },
+
+    "customer_support": {
+      "description": "Support and feedback requests",
+      "hierarchy": { "parent": null, "children": ["report_issue","give_feedback","ask_contact"] },
+      "slots": {},
+      "transitions": { "can_branch_to": [], "can_replace_with": [] },
+      "handler": null
+    },
+
+    "report_issue": {
+      "description": "Customer reports a problem with an order or service",
+      "hierarchy": { "parent": "customer_support", "children": [] },
+      "slots": {
+        "order_id": {
+          "type": "string",
+          "required": true,
+          "prompt": "Please give the order ID related to your issue.",
+          "reprompt": "Tell the order ID so I can reference your issue."
+        },
+        "issue_details": {
+          "type": "string",
+          "required": true,
+          "prompt": "Please describe the problem you're experiencing.",
+          "reprompt": "I need a bit more detail about the issue."
+        }
+      },
+      "transitions": { "can_branch_to": ["view_menu"], "can_replace_with": [] },
+      "handler": "handle_report_issue"
+    },
+
+    "give_feedback": {
+      "description": "Collect feedback or ratings",
+      "hierarchy": { "parent": "customer_support", "children": [] },
+      "slots": {
+        "feedback_text": {
+          "type": "string",
+          "required": true,
+          "prompt": "What feedback would you like to share?",
+          "reprompt": "Please tell me your feedback."
+        },
+        "rating": {
+          "type": "number",
+          "required": false,
+          "prompt": "Optional: give a rating from 1 to 5.",
+          "reprompt": "The rating must be between 1 and 5."
+        }
+      },
+      "transitions": { "can_branch_to": [], "can_replace_with": [] },
+      "handler": "handle_give_feedback"
+    },
+
+    "ask_contact": {
+      "description": "Ask for contact information or hotline",
+      "hierarchy": { "parent": "customer_support", "children": [] },
+      "slots": {},
+      "transitions": { "can_branch_to": [], "can_replace_with": [] },
+      "handler": "handle_ask_contact_info"
+    }
+
+  }
+}
