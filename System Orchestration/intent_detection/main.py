@@ -17,12 +17,18 @@ print("Loading JSON from:", json_path)
 def start_order(context):
     print("Placing order:", context)
 
-handlers = {"start_order": start_order}
+
+handlers = {"handle_start_order": start_order}
 
 # 5. Create registry
 registry = IntentRegistry(json_path, handler_mapping=handlers)
 
 # Test it
-print(registry.get_intent("order.create"))
+print(registry.get_intent("start_order"))
 
-print (registry.get_intent("view_menu"))
+print (registry.get_handler("start_order"))
+
+handler=registry.get_handler("start_order")
+
+handler({"item": "pizza", "quantity": 2})
+
