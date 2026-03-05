@@ -46,3 +46,25 @@ class DialogOrchestrator:
         slot_name = missing[0]
         slot_def = definition["slots"][slot_name]
         return slot_def.get("prompt") or "Please provide the required information."
+    
+    def _build_llm_prompt(self, state, definition, missing):
+        # Construct LLM prompt with context
+        return {
+            "intent": state.intent,
+            "slots": state.slots,
+            "missing": missing,
+            "message": "Please ask the user for missing information."
+        }
+
+    def _handle_complete(self, state, definition):
+        handler_name = definition.get("handler")
+
+        if not handler_name:
+            return "Request completed."
+
+        handler = self.handlers.get(handler_name)
+        if not handler:
+            return "Handler not implemented."
+
+        # Call business handler
+        return handler(state)
