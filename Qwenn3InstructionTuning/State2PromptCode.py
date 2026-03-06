@@ -5,13 +5,14 @@ import hashlib
 import time
 from dataclasses import dataclass
 from typing import Dict, List, Tuple, Optional
-
+from dotenv import load_dotenv
 from openai import OpenAI  # pip install openai
 
 # ----------------------------
 # OpenAI client
 # ----------------------------
-client = OpenAI()  # reads OPENAI_API_KEY from env :contentReference[oaicite:2]{index=2}
+load_dotenv(dotenv_path=".env") # Load environment variables from .env file
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 MODEL = "gpt-5-mini"  # pick the model you want available in your account
 
@@ -45,17 +46,61 @@ CONTEXTS = []
 
 STYLES = []
 
-INTENTS = [
-]
+INTENTS = []
 
+SLOT_SCHEMA: Dict[str, List[str]] = {}
 
-
+def pick_visible_missing(intent: str) -> Tuple[List[str], List[str]]:
+    required = SLOT_SCHEMA.get(intent, [])
+    if not required:
+        return [], []
+    # show 2–4 slots if possible, leave 1–3 missing
+    k = min(len(required), random.randint(2, max(2, min(4, len(required)))))
+    visible = random.sample(required, k=k)
+    missing = [s for s in required if s not in visible]
+    # ensure at least 1 missing for slot-filling intents
+    if len(required) > 1 and not missing:
+        missing = [visible.pop()]
+    return visible, missing
 
 def scenario_signature(s: dict) -> str:
     """Dedup based on scenario structure (not exact text)."""
     blob = json.dumps(s, sort_keys=True, ensure_ascii=False)
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()
 
+# ----------------------------
+# Prompts
+# ----------------------------
+def prompt_user_utterance(state_name: str, scenario: dict, visible_slots: List[str], missing_slots: List[str]) -> str:
+    # State 3 (slot filling user turn): user provides some info, omits others
+    # We keep it as a single utterance to match your row format.
+    return f"""
+You are generating ONLY the caller's spoken words for a Sri Lankan restaurant phone call.
+
+STATE: {state_name}
+Caller type: {scenario["caller_type"]}
+Situation: {scenario["context"]}
+Speaking style: {scenario["style"]}
+Variation: {scenario["variation"]}
+Underlying intent (do NOT output this label): {scenario["intent"]}
+
+The caller should naturally mention SOME details that help the restaurant.
+The caller MUST mention details corresponding to these slot types:
+{visible_slots}
+
+The caller MUST NOT mention details corresponding to these slot types:
+{missing_slots}
+
+Constraints:
+
+- Language: Sinhala with natural Singlish where appropriate (Sri Lanka).
+- Sound like real phone speech (may include small fillers like "ane", "machan", "eka", etc).
+- One utterance (1-3 sentences), no bullet points.
+- No metadata, no explanations. Output ONLY the caller's speech.
+- Make it unique and specific (include a small concrete detail like area/urgency/occasion).
+Optional helpful anchors:
+- create random but plausible values for the visible slots make sure they are real.
+""".strip()
 
 def prompt_user_utterance_state2(state_name: str, scenario: dict) -> str:
     """
@@ -109,6 +154,31 @@ Rules:
 - Do not hallucinate values.
 """.strip()
 
+def prompt_agent_response(state_name: str, scenario: dict, user_utterance: str, filled_slots: dict, missing_slots: List[str]) -> str:
+    return f"""
+You are a professional Sri Lankan restaurant phone-call assistant.
+
+STATE: {state_name}
+Caller said:
+\"\"\"{user_utterance}\"\"\"
+
+Known details (filled_slots):
+{json.dumps(filled_slots, ensure_ascii=False)}
+
+Missing details to complete the task (missing_slots):
+{json.dumps(missing_slots, ensure_ascii=False)}
+
+Hard rules:
+- Respond in Sinhala with natural Singlish where appropriate.
+- Do NOT mention intent labels like "{scenario["intent"]}".
+- Do NOT invent facts not stated by the caller.
+- Ask ONLY 1-3 targeted questions to get the missing details.
+- If missing_slots is empty, confirm completion and proceed politely.
+
+OUTPUT FORMAT (MANDATORY):
+<think>SHORT PLAN (<=20 words). Checklist only. No step-by-step reasoning.</think>
+Then the final agent response text (no extra tags).
+""".strip()
 
 def prompt_agent_response_state2(scenario: dict, user_utterance: str) -> str:
     """
@@ -123,7 +193,7 @@ Caller said:
 \"\"\"{user_utterance}\"\"\"
 
 Hard rules:
-- Respond in Sinhala with natural Singlish where appropriate. .
+- Respond in Sinhala with natural Singlish where appropriate. 
 - Do NOT mention intent labels like "{scenario["intent"]}".
 - Do NOT invent facts not stated by the caller.
 - First, reflect what you THINK they want in normal words (e.g., delivery / takeaway / reservation / hours / complaint).
@@ -192,10 +262,67 @@ def build_state2_row(row_index: int, used_sigs: set) -> Optional[dict]:
         },
         "output": agent_out
     }
+
+def build_state3_row(row_index: int, used_sigs: set) -> Optional[dict]:
+    intent = random.choice(INTENTS)
+    visible, missing = pick_visible_missing(intent)
+
+    scenario = {
+        "intent": intent,
+        "caller_type": random.choice(CALLER_TYPES),
+        "context": random.choice(CONTEXTS),
+        "style": random.choice(STYLES),
+        "variation": random.choice(VARIATIONS),
+        "state": "State 3: Slot Filling",
+        "visible_slots": visible,
+        "missing_slots": missing,
+    }
+
+    sig = scenario_signature(scenario)
+    if sig in used_sigs:
+        return None
+    used_sigs.add(sig)
+
+    # 1) Generate user utterance
+    user_utt = llm_text(prompt_user_utterance("State 3: Slot Filling", scenario, visible, missing))
+
+    # 2) Extract slots (filled + missing) from utterance
+    slots_json = llm_text(prompt_extract_slots(intent, user_utt))
+    try:
+        slots = json.loads(slots_json)
+        filled_slots = slots["filled_slots"]
+        missing_slots = slots["missing_slots"]
+        if not isinstance(filled_slots, dict) or not isinstance(missing_slots, list):
+            raise ValueError("Bad types")
+    except Exception:
+        # If parse fails, fall back to schema-based missing
+        filled_slots = {}
+        missing_slots = SLOT_SCHEMA.get(intent, [])
+
+    # 3) Generate agent response (<think> + response)
+    agent_out = llm_text(prompt_agent_response("State 3: Slot Filling", scenario, user_utt, filled_slots, missing_slots))
+
+    # 4) Build row in your schema
+    instruction = "You are a Breezi Sinhala Call Agent. Ask targeted questions to fill missing details."
+    context_memory = f"Restaurant call. Caller type: {scenario['caller_type']}. Situation: {scenario['context']}. Style: {scenario['style']}."
+
+    return {
+        "instruction": instruction,
+        "input": {
+            "current_state": "State 3: Slot Filling",
+            "intent": intent,
+            "filled_slots": filled_slots,
+            "missing_slots": missing_slots,
+            "user_utterance": user_utt,
+            "context_memory": context_memory,
+        },
+        "output": agent_out
+    }
+
 # ----------------------------
 # Main: generate N rows and save JSONL
 # ----------------------------
-def generate_jsonl(path: str, total_rows: int = 2000, state2_ratio: float = 0.5):
+def generate_jsonl(path: str, total_rows: int = 20, state2_ratio: float = 0.5):
     """
     state2_ratio=0.5 means ~50% State 2 rows, ~50% State 3 rows.
     Adjust as needed.
@@ -210,7 +337,6 @@ def generate_jsonl(path: str, total_rows: int = 2000, state2_ratio: float = 0.5)
 
             if do_state2:
                 row = build_state2_row(rows_written + 1, used_sigs)
-            
 
             if row is None:
                 continue
@@ -222,4 +348,4 @@ def generate_jsonl(path: str, total_rows: int = 2000, state2_ratio: float = 0.5)
 
 
 if __name__ == "__main__":
-    generate_jsonl("restaurant_state2_state3_2000.jsonl", total_rows=2000, state2_ratio=0.5)
+    generate_jsonl("restaurant_test_20.jsonl", total_rows=20, state2_ratio=0.5)
