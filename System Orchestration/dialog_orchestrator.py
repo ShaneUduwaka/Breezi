@@ -68,3 +68,13 @@ class DialogOrchestrator:
 
         # Call business handler
         return handler(state)
+
+    def handle_branch(self, state, new_intent):
+        """
+        Called when user switches intent (branch).
+        Creates new intent state (or updates existing session).
+        """
+        state.intent = new_intent
+        state.slots = {}
+        state.slot_status = {}
+        state.substate = "INIT"
