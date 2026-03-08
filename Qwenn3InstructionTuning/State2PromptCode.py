@@ -38,17 +38,35 @@ def llm_text(prompt: str, *, max_retries: int = 3) -> str:
 # ----------------------------
 # Scenario pools (small, not huge)
 # ----------------------------
-CALLER_TYPES = []
+CALLER_TYPES = [   "student", "office worker", "parent ordering for family", "driver", "elderly caller",
+    "young couple", "tourist"]
 
-VARIATIONS = []
+VARIATIONS = ["Sinhala-heavy, polite, short",
+              "Balanced Sinhala/Singlish, natural",
+              "Singlish-heavy, slightly rushed"]
 
-CONTEXTS = []
+CONTEXTS = [ "calling from a bus", "calling during lunch break", "calling while driving (hands-free)",
+    "calling during heavy rain", "planning dinner with friends", "ordering late night food"]
 
-STYLES = []
+STYLES = ["Direct", "Vague & Rambling", "Frustrated", "Polite", "Rushed", "Confused"]
 
-INTENTS = []
+INTENTS = [ "order_delivery",
+    "order_takeaway",
+    "dinein_reservation",
+    "menu_inquiry",
+    "order_modification",
+    "complaint",
+    "opening_hours",
+    "cancel_order",]
 
-SLOT_SCHEMA: Dict[str, List[str]] = {}
+SLOT_SCHEMA: Dict[str, List[str]] = {   "order_delivery": ["food_item", "quantity", "delivery_address", "phone_number", "payment_method"],
+    "order_takeaway": ["food_item", "quantity", "pickup_time", "name", "phone_number"],
+    "dinein_reservation": ["reservation_date", "reservation_time", "table_size", "name", "phone_number"],
+    "menu_inquiry": ["question_topic"],
+    "order_modification": ["order_id", "change_request"],
+    "complaint": ["order_id", "issue"],
+    "opening_hours": ["day_or_date"],
+    "cancel_order": ["order_id", "reason"],}
 
 def pick_visible_missing(intent: str) -> Tuple[List[str], List[str]]:
     required = SLOT_SCHEMA.get(intent, [])
