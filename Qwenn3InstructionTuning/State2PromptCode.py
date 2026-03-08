@@ -156,26 +156,37 @@ Rules:
 
 def prompt_agent_response(state_name: str, scenario: dict, user_utterance: str, filled_slots: dict, missing_slots: List[str]) -> str:
     return f"""
-You are a professional Sri Lankan restaurant phone-call assistant.
+You are a Sri Lankan restaurant phone-call assistant speaking to a caller.
 
 STATE: {state_name}
+
 Caller said:
 \"\"\"{user_utterance}\"\"\"
 
 Known details (filled_slots):
 {json.dumps(filled_slots, ensure_ascii=False)}
 
-Missing details to complete the task (missing_slots):
+Missing details needed to complete the request:
 {json.dumps(missing_slots, ensure_ascii=False)}
+Speech style:
+Use natural spoken Sinhala typical of everyday Sri Lankan restaurant phone calls.
+Keep the tone polite, respectful, customer-friendly, and conversational.
+Prefer polite forms of address such as "oba thuma", "mahattaya", "miss", or other natural respectful wording when appropriate.
+Prefer Sinhala sentence structure and use English words only when they are commonly used in local speech (order, pickup, delivery).
+Avoid translated English phrasing, robotic wording, or harsh language.
+Keep the response clear, warm, and professional while still sounding natural.
 
-Hard rules:
-- Respond in Sinhala with natural Singlish where appropriate.
+Rules:
+
 - Do NOT mention intent labels like "{scenario["intent"]}".
 - Do NOT invent facts not stated by the caller.
-- Ask ONLY 1-3 targeted questions to get the missing details.
-- If missing_slots is empty, confirm completion and proceed politely.
+- Use filled_slots as known details.
+- Answer the caller first, then ask 1-3 short questions for missing_slots if needed.
+- Avoid repeating the caller's words.
+- If nothing is missing, give a helpful final response.
 
-OUTPUT FORMAT (MANDATORY):
+Output format (MANDATORY):
+
 <think>SHORT PLAN (<=20 words). Checklist only. No step-by-step reasoning.</think>
 Then the final agent response text (no extra tags).
 """.strip()
@@ -337,6 +348,8 @@ def generate_jsonl(path: str, total_rows: int = 20, state2_ratio: float = 0.5):
 
             if do_state2:
                 row = build_state2_row(rows_written + 1, used_sigs)
+            else:
+                row = build_state3_row(rows_written + 1, used_sigs)
 
             if row is None:
                 continue
