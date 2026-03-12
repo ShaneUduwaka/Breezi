@@ -5,6 +5,9 @@ import Footer from '../components/Footer';
 import AboutHero from '../components/about/AboutHero';
 import AboutMission from '../components/about/AboutMission';
 import AboutCoreValues from '../components/about/AboutCoreValues';
+import AboutStory from '../components/about/AboutTeam';
+import AboutTeam from '../components/about/AboutTeam';
+import AboutRoadmap from '../components/about/AboutRoadmap';
 
 export const metadata = {
   title: 'About Us | Breezi AI',
@@ -20,6 +23,9 @@ export default function AboutPage() {
         <AboutHero />
         <AboutMission />
         <AboutCoreValues />
+        <AboutStory />
+        <AboutTeam />
+        <AboutRoadmap />
       </main>
 
       <Footer />
