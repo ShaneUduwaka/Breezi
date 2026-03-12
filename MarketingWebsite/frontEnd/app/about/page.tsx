@@ -5,7 +5,7 @@ import Footer from '../components/Footer';
 import AboutHero from '../components/about/AboutHero';
 import AboutMission from '../components/about/AboutMission';
 import AboutCoreValues from '../components/about/AboutCoreValues';
-import AboutStory from '../components/about/AboutTeam';
+import AboutStory from '../components/about/AboutStory';
 import AboutTeam from '../components/about/AboutTeam';
 import AboutRoadmap from '../components/about/AboutRoadmap';
 
