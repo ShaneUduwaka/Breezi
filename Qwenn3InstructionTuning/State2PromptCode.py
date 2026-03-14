@@ -38,17 +38,35 @@ def llm_text(prompt: str, *, max_retries: int = 3) -> str:
 # ----------------------------
 # Scenario pools (small, not huge)
 # ----------------------------
-CALLER_TYPES = []
+CALLER_TYPES = [   "student", "office worker", "parent ordering for family", "driver", "elderly caller",
+    "young couple", "tourist"]
 
-VARIATIONS = []
+VARIATIONS = ["Sinhala-heavy, polite, short",
+              "Balanced Sinhala/Singlish, natural",
+              "Singlish-heavy, slightly rushed"]
 
-CONTEXTS = []
+CONTEXTS = [ "calling from a bus", "calling during lunch break", "calling while driving (hands-free)",
+    "calling during heavy rain", "planning dinner with friends", "ordering late night food"]
 
-STYLES = []
+STYLES = ["Direct", "Vague & Rambling", "Frustrated", "Polite", "Rushed", "Confused"]
 
-INTENTS = []
+INTENTS = [ "order_delivery",
+    "order_takeaway",
+    "dinein_reservation",
+    "menu_inquiry",
+    "order_modification",
+    "complaint",
+    "opening_hours",
+    "cancel_order",]
 
-SLOT_SCHEMA: Dict[str, List[str]] = {}
+SLOT_SCHEMA: Dict[str, List[str]] = {   "order_delivery": ["food_item", "quantity", "delivery_address", "phone_number", "payment_method"],
+    "order_takeaway": ["food_item", "quantity", "pickup_time", "name", "phone_number"],
+    "dinein_reservation": ["reservation_date", "reservation_time", "table_size", "name", "phone_number"],
+    "menu_inquiry": ["question_topic"],
+    "order_modification": ["order_id", "change_request"],
+    "complaint": ["order_id", "issue"],
+    "opening_hours": ["day_or_date"],
+    "cancel_order": ["order_id", "reason"],}
 
 def pick_visible_missing(intent: str) -> Tuple[List[str], List[str]]:
     required = SLOT_SCHEMA.get(intent, [])
@@ -156,26 +174,37 @@ Rules:
 
 def prompt_agent_response(state_name: str, scenario: dict, user_utterance: str, filled_slots: dict, missing_slots: List[str]) -> str:
     return f"""
-You are a professional Sri Lankan restaurant phone-call assistant.
+You are a Sri Lankan restaurant phone-call assistant speaking to a caller.
 
 STATE: {state_name}
+
 Caller said:
 \"\"\"{user_utterance}\"\"\"
 
 Known details (filled_slots):
 {json.dumps(filled_slots, ensure_ascii=False)}
 
-Missing details to complete the task (missing_slots):
+Missing details needed to complete the request:
 {json.dumps(missing_slots, ensure_ascii=False)}
+Speech style:
+Use natural spoken Sinhala typical of everyday Sri Lankan restaurant phone calls.
+Keep the tone polite, respectful, customer-friendly, and conversational.
+Prefer polite forms of address such as "oba thuma", "mahattaya", "miss", or other natural respectful wording when appropriate.
+Prefer Sinhala sentence structure and use English words only when they are commonly used in local speech (order, pickup, delivery).
+Avoid translated English phrasing, robotic wording, or harsh language.
+Keep the response clear, warm, and professional while still sounding natural.
 
-Hard rules:
-- Respond in Sinhala with natural Singlish where appropriate.
+Rules:
+
 - Do NOT mention intent labels like "{scenario["intent"]}".
 - Do NOT invent facts not stated by the caller.
-- Ask ONLY 1-3 targeted questions to get the missing details.
-- If missing_slots is empty, confirm completion and proceed politely.
+- Use filled_slots as known details.
+- Answer the caller first, then ask 1-3 short questions for missing_slots if needed.
+- Avoid repeating the caller's words.
+- If nothing is missing, give a helpful final response.
 
-OUTPUT FORMAT (MANDATORY):
+Output format (MANDATORY):
+
 <think>SHORT PLAN (<=20 words). Checklist only. No step-by-step reasoning.</think>
 Then the final agent response text (no extra tags).
 """.strip()
@@ -337,6 +366,8 @@ def generate_jsonl(path: str, total_rows: int = 20, state2_ratio: float = 0.5):
 
             if do_state2:
                 row = build_state2_row(rows_written + 1, used_sigs)
+            else:
+                row = build_state3_row(rows_written + 1, used_sigs)
 
             if row is None:
                 continue

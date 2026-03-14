@@ -21,7 +21,7 @@ export default function ContactForm() {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    setStatus("success");
+    setStatus("successs");
     setFormData({ name: "", email: "", company: "", message: "" });
 
     // Reset status after delay
