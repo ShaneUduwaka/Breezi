@@ -8,23 +8,41 @@ class GenericHandler:
     """
     Generic handler that reads business data and response templates from JSON.
     Completely templated - works for any business type.
+
+    Optionally holds references to a RAG store and conversation context memory
+    so individual handler methods can query external knowledge or history.
     """
 
-    def __init__(self, business_data):
+    def __init__(self, business_data, rag_store=None, context_memory=None):
         """
         Initialize with business data from JSON
 
         Args:
             business_data: dict containing menu, promotions, locations, hours, etc.
+            rag_store: optional RagStore instance for key/value lookup
+            context_memory: optional ContextMemory instance for storing turns
         """
         self.business_data = business_data
         self.menu_data = business_data.get("menu", {})
         self.promotions = business_data.get("promotions", [])
         self.locations = business_data.get("locations", {})
         self.hours = business_data.get("hours", {})
+        self.rag = rag_store
+        self.context = context_memory
 
     def handle_view_menu_overview(self, state):
-        """Show general menu overview - reads categories from JSON"""
+        """Show general menu overview - reads categories from JSON.
+
+        If a RAG store is available we attempt a quick lookup before recomputing
+        the overview; this allows the menu text to be updated independently of
+        the core JSON.
+        """
+        # try RAG first
+        if self.rag:
+            cached = self.rag.get("menu_overview")
+            if cached:
+                return cached
+
         categories = self.menu_data.get("categories", {})
 
         if not categories:
@@ -174,10 +192,14 @@ class GenericHandler:
 # Create handler instance - will be initialized with business data
 _generic_handler = None
 
-def initialize_handlers(business_data):
-    """Initialize handlers with business data from JSON"""
+def initialize_handlers(business_data, rag_store=None, context_memory=None):
+    """Initialize handlers with business data from JSON
+
+    rag_store and context_memory are optional and will be attached to the
+    generic handler so that individual methods can access them if needed.
+    """
     global _generic_handler
-    _generic_handler = GenericHandler(business_data)
+    _generic_handler = GenericHandler(business_data, rag_store, context_memory)
 
 def handle_view_menu_overview(state):
     return _generic_handler.handle_view_menu_overview(state)

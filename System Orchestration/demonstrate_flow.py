@@ -26,6 +26,13 @@ def demonstrate_slot_filling():
     conversation = system["conversation"]
     nlu = system["nlu"]
     registry = system["registry"]
+    rag = system.get("rag")
+    ctx = system.get("context_memory")
+
+    # prepopulate rag with a cached menu for demonstration
+    if rag:
+        rag.put("menu_overview", "📋 Cached menu from RAG store: burgers, fries, drinks.")
+
 
     # Test Case 1: Order pizza (requires slot filling)
     print("🧪 TEST CASE 1: Order Pizza (Missing Slots)")
@@ -38,8 +45,8 @@ def demonstrate_slot_filling():
     nlu_result = nlu.parse(user_input)
     print(f"🧠 NLU Result: intent='{nlu_result.intent}', entities={nlu_result.entities}")
 
-    # Step 2: Process through conversation manager
-    response = conversation.handle_message(user_input)
+    # Step 2: Process through conversation manager (session id attached)
+    response = conversation.handle_message(user_input, session_id="demo-session")
     print(f"💬 Initial Response: {response}")
 
     # Step 3: Check for missing slots
@@ -91,7 +98,7 @@ def demonstrate_slot_filling():
     nlu_result = nlu.parse(user_input)
     print(f"🧠 NLU Result: intent='{nlu_result.intent}', entities={nlu_result.entities}")
 
-    response = conversation.handle_message(user_input)
+    response = conversation.handle_message(user_input, session_id="demo-session")
     print(f"💬 Response: {response}")
 
     if conversation.state:
@@ -110,6 +117,13 @@ def demonstrate_slot_filling():
     print("• If missing: Print LLM prompt, wait for direct slot values")
     print("• If complete: Ask confirmation, then execute handler")
     print("• Conversation state maintained across inputs")
+
+    # show stored context if available
+    if ctx and conversation.session_id:
+        print("\n📂 Stored turns for session:")
+        turns = ctx.get_turns(conversation.session_id)
+        for t in turns:
+            print(t)
 
 
 if __name__ == "__main__":

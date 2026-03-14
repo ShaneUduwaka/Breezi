@@ -11,6 +11,10 @@ from handlers.order_handlers import initialize_handlers
 from llm.fake_llm import FakeLLM
 from nlu.fake_nlu import FakeNLU
 
+# memory stores
+from memory.rag_store import RagStore
+from memory.context_memory import ContextMemory
+
 
 def load_business_config(json_path):
     """Load business configuration from JSON file"""
@@ -35,8 +39,13 @@ def build_system(json_path=None):
     business_data = business_config.get("business_data", {})
     nlu_config = business_config.get("nlu_config", {})
 
-    # Initialize handlers with business data
-    initialize_handlers(business_data)
+    # memory stores (must be created before handlers so they can be injected)
+    redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    rag_store = RagStore(redis_url)
+    context_mem = ContextMemory(redis_url)
+
+    # Initialize handlers with business data and memory references
+    initialize_handlers(business_data, rag_store=rag_store, context_memory=context_mem)
 
     # Create registry with intents from JSON
     registry = IntentRegistry(json_path, handler_mapping=HANDLERS)
@@ -51,7 +60,7 @@ def build_system(json_path=None):
     stt = DummySTT()
     tts = DummyTTS()
 
-    conversation = ConversationManager(registry, orchestrator, nlu)
+    conversation = ConversationManager(registry, orchestrator, nlu, memory=context_mem)
 
     return {
         "conversation": conversation,
@@ -62,4 +71,6 @@ def build_system(json_path=None):
         "registry": registry,
         "llm": llm,
         "business_config": business_config,
+        "rag": rag_store,
+        "context_memory": context_mem,
     }
