@@ -38,35 +38,41 @@ def llm_text(prompt: str, *, max_retries: int = 3) -> str:
 # ----------------------------
 # Scenario pools (small, not huge)
 # ----------------------------
-CALLER_TYPES = [   "student", "office worker", "parent ordering for family", "driver", "elderly caller",
+CALLER_TYPES = [
+    "student", "office worker", "parent ordering for family", "driver", "elderly caller",
     "young couple", "tourist"]
 
 VARIATIONS = ["Sinhala-heavy, polite, short",
               "Balanced Sinhala/Singlish, natural",
               "Singlish-heavy, slightly rushed"]
 
-CONTEXTS = [ "calling from a bus", "calling during lunch break", "calling while driving (hands-free)",
+CONTEXTS = [
+    "calling from a bus", "calling during lunch break", "calling while driving (hands-free)",
     "calling during heavy rain", "planning dinner with friends", "ordering late night food"]
 
 STYLES = ["Direct", "Vague & Rambling", "Frustrated", "Polite", "Rushed", "Confused"]
 
-INTENTS = [ "order_delivery",
+INTENTS = [
+    "order_delivery",
     "order_takeaway",
     "dinein_reservation",
     "menu_inquiry",
     "order_modification",
     "complaint",
     "opening_hours",
-    "cancel_order",]
+    "cancel_order",
+]
 
-SLOT_SCHEMA: Dict[str, List[str]] = {   "order_delivery": ["food_item", "quantity", "delivery_address", "phone_number", "payment_method"],
+SLOT_SCHEMA: Dict[str, List[str]] = {
+    "order_delivery": ["food_item", "quantity", "delivery_address", "phone_number", "payment_method"],
     "order_takeaway": ["food_item", "quantity", "pickup_time", "name", "phone_number"],
     "dinein_reservation": ["reservation_date", "reservation_time", "table_size", "name", "phone_number"],
     "menu_inquiry": ["question_topic"],
     "order_modification": ["order_id", "change_request"],
     "complaint": ["order_id", "issue"],
     "opening_hours": ["day_or_date"],
-    "cancel_order": ["order_id", "reason"],}
+    "cancel_order": ["order_id", "reason"],
+}
 
 def pick_visible_missing(intent: str) -> Tuple[List[str], List[str]]:
     required = SLOT_SCHEMA.get(intent, [])
@@ -96,28 +102,38 @@ def prompt_user_utterance(state_name: str, scenario: dict, visible_slots: List[s
 You are generating ONLY the caller's spoken words for a Sri Lankan restaurant phone call.
 
 STATE: {state_name}
+
+Background scenario (for tone only):
 Caller type: {scenario["caller_type"]}
-Situation: {scenario["context"]}
 Speaking style: {scenario["style"]}
 Variation: {scenario["variation"]}
+
 Underlying intent (do NOT output this label): {scenario["intent"]}
 
-The caller should naturally mention SOME details that help the restaurant.
-The caller MUST mention details corresponding to these slot types:
+The scenario information above is background context only.
+Do NOT repeat or describe the scenario directly in the caller’s speech.
+Use it only to influence tone and make up a real life call scenario.
+
+Speech style:
+Use natural spoken Sinhala typical of everyday Sri Lankan phone calls.
+Prefer Sinhala sentence structure and only use English words common in local speech (order, pickup, delivery).
+Avoid translated English phrasing or formal business language.
+Keep the speech casual, brief, and conversational with short phone-style sentences.
+
+Conversation requirements:
+
+Naturally include details corresponding to these slot types:
 {visible_slots}
 
 The caller MUST NOT mention details corresponding to these slot types:
 {missing_slots}
 
-Constraints:
+Output rules:
 
-- Language: Sinhala with natural Singlish where appropriate (Sri Lanka).
-- Sound like real phone speech (may include small fillers like "ane", "machan", "eka", etc).
-- One utterance (1-3 sentences), no bullet points.
-- No metadata, no explanations. Output ONLY the caller's speech.
-- Make it unique and specific (include a small concrete detail like area/urgency/occasion).
-Optional helpful anchors:
-- create random but plausible values for the visible slots make sure they are real.
+- One utterance only
+- 1-3 sentences
+- No explanations or metadata
+- Output ONLY the caller's spoken words
 """.strip()
 
 def prompt_user_utterance_state2(state_name: str, scenario: dict) -> str:
@@ -130,25 +146,36 @@ You are generating ONLY the caller's spoken words for a Sri Lankan restaurant ph
 
 STATE: {state_name}
 Line status: greeting finished, line clear.
+
+Background scenario (for tone only):
 Caller type: {scenario["caller_type"]}
-Situation: {scenario["context"]}
 Speaking style: {scenario["style"]}
 Variation: {scenario["variation"]}
 
 Underlying intent (do NOT output this label): {scenario["intent"]}
 
-Rules:
-- The caller MUST clearly hint/express the intent naturally (do NOT name any intent labels).
-- caller must provide MINIMAL info (0-2 details).
+The scenario information above is background context only.
+Do NOT describe the scenario directly in the caller's speech.
+Use it only to influence tone and make up a real life call scenario.
 
-Constraints:
-- Language: Sinhala with natural Singlish (Sri Lanka).
-- Sound like real phone speech.
-- 1-2 sentences preferred (max 3).
-- No metadata, no explanations. Output ONLY the caller's speech.
-- Create plausible values if visible slots exist.
+Speech style:
+Use natural spoken Sinhala typical of everyday Sri Lankan phone calls.
+Prefer Sinhala sentence structure and only use English words common in local speech (order, pickup, delivery).
+Avoid translated English phrasing, robotic wording and formal business language.
+Keep the speech casual and brief with short conversational sentences.
+
+Conversation rules:
+
+- The caller should clearly hint at their request naturally without naming any intent labels.
+- Provide minimal information (0-2 small details only).
+
+Output rules:
+
+- One short utterance
+- 1-2 sentences (max 3)
+- No explanations or metadata
+- Output ONLY the caller's spoken words
 """.strip()
-
 
 def prompt_extract_slots(intent: str, user_utterance: str) -> str:
     # This lets the model propose filled slots present in the utterance.
@@ -215,24 +242,36 @@ def prompt_agent_response_state2(scenario: dict, user_utterance: str) -> str:
     We keep the same mandatory think format.
     """
     return f"""
-You are a professional Sri Lankan restaurant phone-call assistant.
+You are a Sri Lankan restaurant phone-call assistant speaking to a caller.
 
-STATE: State 2: Intent Discovery
+STATE: State 2 — Intent Discovery
+
 Caller said:
 \"\"\"{user_utterance}\"\"\"
 
-Hard rules:
-- Respond in Sinhala with natural Singlish where appropriate. 
+Speech style:
+Use natural spoken Sinhala typical of everyday Sri Lankan restaurant phone calls.
+Keep the tone polite, respectful, customer-friendly, and conversational.
+Prefer polite forms of address such as "oba thuma", "mahattaya", "miss", or other natural respectful wording when appropriate.
+Prefer Sinhala sentence structure and use English words only when they are commonly used in local speech (order, pickup, delivery).
+Avoid translated English phrasing, robotic wording, or harsh language.
+Keep the response clear, warm, and professional while still sounding natural.
+
+Rules:
+
 - Do NOT mention intent labels like "{scenario["intent"]}".
 - Do NOT invent facts not stated by the caller.
-- First, reflect what you THINK they want in normal words (e.g., delivery / takeaway / reservation / hours / complaint).
-- Ask ONLY 1-3 questions total.
-- Your questions should either confirm the request if ambiguous OR collect the most important missing details.
+- Use filled_slots as known details.
+- Answer the caller first, then ask 1-3 short questions for missing_slots if needed.
+- Avoid repeating the caller's words.
+- If nothing is missing, give a helpful final response.
 
-OUTPUT FORMAT (MANDATORY):
+Output format (MANDATORY):
+
 <think>SHORT PLAN (<=20 words). Checklist only. No step-by-step reasoning.</think>
 Then the final agent response text (no extra tags).
 """.strip()
+
 
 
 # ----------------------------
@@ -245,7 +284,6 @@ def build_state2_row(row_index: int, used_sigs: set) -> Optional[dict]:
     scenario = {
         "intent": intent,
         "caller_type": random.choice(CALLER_TYPES),
-        "context": random.choice(CONTEXTS),
         "style": random.choice(STYLES),
         "variation": random.choice(VARIATIONS),
         "state": "State 2: Intent Discovery",
@@ -299,7 +337,6 @@ def build_state3_row(row_index: int, used_sigs: set) -> Optional[dict]:
     scenario = {
         "intent": intent,
         "caller_type": random.choice(CALLER_TYPES),
-        "context": random.choice(CONTEXTS),
         "style": random.choice(STYLES),
         "variation": random.choice(VARIATIONS),
         "state": "State 3: Slot Filling",
@@ -333,7 +370,7 @@ def build_state3_row(row_index: int, used_sigs: set) -> Optional[dict]:
 
     # 4) Build row in your schema
     instruction = "You are a Breezi Sinhala Call Agent. Ask targeted questions to fill missing details."
-    context_memory = f"Restaurant call. Caller type: {scenario['caller_type']}. Situation: {scenario['context']}. Style: {scenario['style']}."
+    context_memory = f"Restaurant call. Caller type: {scenario['caller_type']}. Style: {scenario['style']}."
 
     return {
         "instruction": instruction,
@@ -351,7 +388,7 @@ def build_state3_row(row_index: int, used_sigs: set) -> Optional[dict]:
 # ----------------------------
 # Main: generate N rows and save JSONL
 # ----------------------------
-def generate_jsonl(path: str, total_rows: int = 20, state2_ratio: float = 0.5):
+def generate_jsonl(path: str, total_rows: int = 2000, state2_ratio: float = 0.5):
     """
     state2_ratio=0.5 means ~50% State 2 rows, ~50% State 3 rows.
     Adjust as needed.
@@ -379,4 +416,4 @@ def generate_jsonl(path: str, total_rows: int = 20, state2_ratio: float = 0.5):
 
 
 if __name__ == "__main__":
-    generate_jsonl("restaurant_test_20.jsonl", total_rows=20, state2_ratio=0.5)
+    generate_jsonl("restaurant_test_2000.jsonl", total_rows=2000, state2_ratio=0.5)
