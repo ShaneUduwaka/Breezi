@@ -1,6 +1,8 @@
 # main.py
 import os
 from IntentRegistry import IntentRegistry  # your class
+from intent_state import IntentState  # your class
+from dialog_orchestrator import DialogOrchestrator  # your class
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 print("Current directory:", current_dir)
@@ -22,9 +24,11 @@ handlers = {"handle_start_order": start_order}
 
 # 5. Create registry
 registry = IntentRegistry(json_path, handler_mapping=handlers)
+IntentState=IntentState("start_order", registry.get_intent("start_order"))
 
-print(registry.get_handler("start_order"))
-
+IntentState.update_slot("order_items", "pizza")
+DialogOrchestrator=DialogOrchestrator(registry, llm=None)
+print(DialogOrchestrator.process(IntentState))
 
 
 

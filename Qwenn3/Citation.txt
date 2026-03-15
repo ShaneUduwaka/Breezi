@@ -1,0 +1,7 @@
+## Citation
+
+If you use Qwen models in research, please cite:
+
+Qwen Team. (2023).  
+Qwen Technical Report.  
+https://arxiv.org/abs/2309.16609

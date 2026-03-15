@@ -1,9 +1,106 @@
 {
-  "engine_version": "1.0",
+  "engine_version": "2.0",
+  "business_config": {
+    "name": "Breezi Fast Food",
+    "type": "restaurant",
+    "description": "AI-powered fast food ordering system"
+  },
+  "nlu_config": {
+    "fallback_intent": "global_browse",
+    "entity_patterns": {
+      "item_name": ["pizza", "burger", "fries", "chicken", "salad", "drink", "cola", "soda"],
+      "category": ["burgers", "buckets", "sides", "drinks", "pizzas"],
+      "location_query": ["downtown", "mall", "airport", "city center", "near me"],
+      "order_type": ["delivery", "pickup", "dine-in"],
+      "quantity": ["one", "two", "three", "1", "2", "3", "single", "double", "triple"]
+    }
+  },
+  "business_data": {
+    "menu": {
+      "categories": {
+        "burgers": {
+          "name": "Burgers",
+          "items": {
+            "classic_burger": {
+              "name": "Classic Burger",
+              "description": "Perfectly grilled patty with fresh vegetables",
+              "price": 8.99
+            },
+            "deluxe_burger": {
+              "name": "Deluxe Burger",
+              "description": "Loaded with cheese, bacon, and special sauce",
+              "price": 10.99
+            },
+            "spicy_burger": {
+              "name": "Spicy Burger",
+              "description": "Hot and spicy with jalapeños and chipotle sauce",
+              "price": 9.99
+            }
+          }
+        },
+        "buckets": {
+          "name": "Buckets",
+          "items": {
+            "chicken_bucket": {
+              "name": "4-piece Chicken Bucket",
+              "description": "Tender and crispy fried chicken",
+              "price": 12.99
+            },
+            "combo_bucket": {
+              "name": "6-piece Combo Bucket",
+              "description": "Chicken with fries and coleslaw",
+              "price": 16.99
+            },
+            "family_bucket": {
+              "name": "Family Bucket",
+              "description": "10 pieces with sides and drinks",
+              "price": 24.99
+            }
+          }
+        },
+        "sides": {
+          "name": "Sides",
+          "items": {
+            "fries": {
+              "name": "French Fries",
+              "description": "Golden and delicious, served hot",
+              "price": 4.99
+            },
+            "coleslaw": {
+              "name": "Coleslaw",
+              "description": "Fresh creamy coleslaw",
+              "price": 3.99
+            },
+            "drink": {
+              "name": "Soft Drink",
+              "description": "Coke, Sprite, or Orange soda",
+              "price": 2.99
+            }
+          }
+        }
+      }
+    },
+    "promotions": [
+      "Buy 2 Get 1 Free on Fries",
+      "Weekend Special: 20% off combo meals",
+      "Family Bundle: Save $5 on orders over $50"
+    ],
+    "locations": {
+      "downtown": "123 Main St, Downtown",
+      "mall": "Shopping Center, Level 2",
+      "airport": "Terminal 2, Gate Area"
+    },
+    "hours": {
+      "monday_friday": "10 AM - 10 PM",
+      "saturday_sunday": "11 AM - 11 PM",
+      "holidays": "1 PM - 9 PM"
+    }
+  },
   "intents": {
 
     "global_browse": {
       "description": "General browsing domain for informational queries",
+      "nlu_keywords": ["what", "tell me", "show me", "info", "information", "help"],
       "hierarchy": { "parent": null, "children": ["view_menu", "view_promotions", "view_locations", "view_hours"] },
       "slots": {},
       "transitions": {
@@ -15,6 +112,7 @@
 
     "view_menu": {
       "description": "Show menu items or specific menu info",
+      "nlu_keywords": ["menu", "what do you have", "show menu", "items", "food", "options"],
       "hierarchy": { "parent": "global_browse", "children": ["view_menu_category", "view_menu_item"] },
       "slots": {},
       "transitions": {
@@ -26,6 +124,7 @@
 
     "view_menu_category": {
       "description": "Show items by category",
+      "nlu_keywords": ["burgers", "sides", "buckets", "drinks", "category", "show me"],
       "hierarchy": { "parent": "view_menu", "children": [] },
       "slots": {
         "category": {
@@ -41,6 +140,7 @@
 
     "view_menu_item": {
       "description": "Show details about a specific item",
+      "nlu_keywords": ["tell me about", "details of", "info on", "what's", "about the"],
       "hierarchy": { "parent": "view_menu", "children": [] },
       "slots": {
         "item_name": {
@@ -56,6 +156,7 @@
 
     "view_promotions": {
       "description": "Show current promotions, deals, vouchers",
+      "nlu_keywords": ["promotions", "deals", "discounts", "offers", "special", "sale"],
       "hierarchy": { "parent": "global_browse", "children": [] },
       "slots": {},
       "transitions": { "can_branch_to": [], "can_replace_with": [] },
@@ -64,6 +165,7 @@
 
     "view_locations": {
       "description": "Provide store locations",
+      "nlu_keywords": ["location", "where", "store", "restaurant", "branch", "address"],
       "hierarchy": { "parent": "global_browse", "children": [] },
       "slots": {
         "location_query": {
@@ -79,6 +181,7 @@
 
     "view_hours": {
       "description": "Business opening hours",
+      "nlu_keywords": ["hours", "open", "operating hours", "when", "time"],
       "hierarchy": { "parent": "global_browse", "children": [] },
       "slots": {},
       "transitions": { "can_branch_to": [], "can_replace_with": [] },
@@ -87,6 +190,7 @@
 
     "order_flow": {
       "description": "Top-level order handling domain",
+      "nlu_keywords": ["order", "buy", "purchase", "get"],
       "hierarchy": { "parent": null, "children": ["start_order", "modify_order", "cancel_order", "track_order"] },
       "slots": {},
       "transitions": {
@@ -98,6 +202,7 @@
 
     "start_order": {
       "description": "Initiate a new order",
+      "nlu_keywords": ["order", "want to order", "i want", "can i have", "give me", "place order"],
       "hierarchy": { "parent": "order_flow", "children": [] },
       "slots": {
         "order_type": {
