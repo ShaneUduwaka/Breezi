@@ -9,6 +9,7 @@ import AboutStory from '../components/about/AboutStory';
 import AboutTeam from '../components/about/AboutTeam';
 import AboutRoadmap from '../components/about/AboutRoadmap';
 
+
 export const metadata = {
   title: 'About Us | Breezi AI',
   description: 'Learn about Breezi AI, our mission, core values, and the story behind our advanced AI call agents.',
