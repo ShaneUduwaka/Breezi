@@ -21,8 +21,8 @@ export default function BlogPage() {
         <CategoryNav />
 
         <div className="flex flex-col lg:flex-row gap-12">
-            <BlogGrid />
-            <BlogSidebar />
+          <BlogGrid />
+          <BlogSidebar />
         </div>
 
         <NewsletterCapture />
