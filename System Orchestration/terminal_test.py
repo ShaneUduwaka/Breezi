@@ -87,7 +87,7 @@ def terminal_test(system):
         print(f"   Entities: {nlu_result.entities}")
 
         # Step 2: Process through conversation manager
-        response = conversation.handle_message(user_input)
+        response = conversation.handle_message(user_input, session_id="terminal-session")
 
         # Step 3: Check if slots are missing
         if conversation.state and conversation.state.missing_slots():

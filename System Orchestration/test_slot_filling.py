@@ -61,8 +61,8 @@ def simulate_slot_filling_test():
     nlu_result = system["nlu"].parse(user_input)
     print(f"🧠 NLU: intent='{nlu_result.intent}', entities={nlu_result.entities}")
 
-    # Process through conversation
-    response = conversation.handle_message(user_input)
+    # Process through conversation (session id used for context)
+    response = conversation.handle_message(user_input, session_id="test-session")
     print(f"💬 Initial response: {response}")
 
     # Check missing slots
@@ -111,7 +111,7 @@ def simulate_slot_filling_test():
     nlu_result = system["nlu"].parse(user_input)
     print(f"🧠 NLU: intent='{nlu_result.intent}', entities={nlu_result.entities}")
 
-    response = conversation.handle_message(user_input)
+    response = conversation.handle_message(user_input, session_id="test-session")
     print(f"💬 Response: {response}")
 
     if conversation.state:
