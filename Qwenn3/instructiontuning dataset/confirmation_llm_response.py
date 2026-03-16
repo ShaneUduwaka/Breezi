@@ -3,32 +3,39 @@ import json
 import time
 from typing import List
 from dotenv import load_dotenv
-from openai import OpenAI
+import google.generativeai as genai
 
 # ----------------------------
-# OpenAI client
+# Gemini client
 # ----------------------------
 load_dotenv(dotenv_path=".env")
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-MODEL = "gpt-5-mini"
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+MODEL = "gemini-1.5-flash"
+
+model = genai.GenerativeModel(MODEL)
 
 def llm_text(prompt: str, *, max_retries: int = 3) -> str:
     last_err = None
+
     for attempt in range(max_retries):
         try:
-            resp = client.responses.create(
-                model=MODEL,
-                input=prompt,
-            )
-            text = (resp.output_text or "").strip()
+            resp = model.generate_content(prompt)
+
+            text = resp.text.strip()
+
             if not text:
-                raise RuntimeError("Empty output_text")
+                raise RuntimeError("Empty response")
+
             return text
+
         except Exception as e:
             last_err = e
             time.sleep(0.8 * (attempt + 1))
+
     raise RuntimeError(f"LLM call failed after retries: {last_err}")
+
 
 def prompt_agent_response_state4(intent: str, user_utterance: str, filled_slots: dict, missing_slots: List[str]) -> str:
     return f"""
@@ -69,8 +76,11 @@ Output format (MANDATORY):
 Then the final agent response text (no extra tags).
 """.strip()
 
+
 def generate_state4_responses(input_path: str, output_path: str):
+
     rows = []
+
     with open(input_path, "r", encoding="utf-8") as f:
         for line in f:
             rows.append(json.loads(line))
@@ -78,6 +88,7 @@ def generate_state4_responses(input_path: str, output_path: str):
     completed_rows = []
 
     for row in rows:
+
         intent = row["input"]["intent"]
         filled_slots = row["input"]["filled_slots"]
         missing_slots = row["input"]["missing_slots"]
@@ -100,6 +111,7 @@ def generate_state4_responses(input_path: str, output_path: str):
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
 
     print(f"Wrote {len(completed_rows)} rows to {output_path}")
+
 
 if __name__ == "__main__":
     generate_state4_responses(
