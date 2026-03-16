@@ -48,3 +48,15 @@ Radford, A., Kim, J. W., Xu, T., Brockman, G., McLeavey, C., & Sutskever, I. (20
 **Robust Speech Recognition via Large-Scale Weak Supervision.**
 arXiv:2212.04356
 https://arxiv.org/abs/2212.04356
+
+---
+
+## Training Data
+
+The Whisper model in this project was fine-tuned using audio extracted from publicly available YouTube videos.
+
+Only videos licensed under the **YouTube Creative Commons filter** were used. The dataset primarily consists of Sinhala-language content including podcasts, educational videos, and conversational speech to capture Sinhala accents and Sinhala-English code-switching.
+
+The collected data was used solely for research and model training purposes. Original video content and extracted audio are not redistributed as part of this repository, and all rights remain with the original content creators.
+
+---
