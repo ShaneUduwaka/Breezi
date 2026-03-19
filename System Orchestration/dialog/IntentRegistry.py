@@ -6,7 +6,7 @@ class IntentRegistry:
         self.intents = self.load_schema(path)
 
     def load_schema(self, path):
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         registry = {}

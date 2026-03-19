@@ -1,110 +1,119 @@
 """
 Automated Test Script for Terminal Mode
-Demonstrates the slot-filling flow with pre-defined inputs
+Demonstrates the slot-filling flow with configuration-driven test data
+All test inputs and expected values come from testdata.JSON - NO HARDCODING!
 """
 
 import sys
 import os
-from io import StringIO
 import json
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from dialog.IntentRegistry import IntentRegistry
-from dialog.dialog_orchestrator import DialogOrchestrator
-from system.conversation_manager import ConversationManager
 from system.bootsrap import build_system
-
-from handlers.handler_mapping import HANDLERS
-from llm.fake_llm import FakeLLM
-from nlu.fake_nlu import FakeNLU
+from utils.test_data_loader import TestDataLoader
 
 
-def simulate_slot_filling_test():
-    """Test the slot filling flow with simulated user inputs"""
-
-    system = build_system()
+def run_test_scenario(scenario_name, loader, system):
+    """
+    Run a single test scenario using configuration from testdata.JSON
+    
+    Args:
+        scenario_name: Name of scenario to run
+        loader: TestDataLoader instance
+        system: Built system from build_system()
+    """
+    scenario = loader.get_scenario(scenario_name)
+    user_input = loader.get_input(scenario_name)
+    slot_updates = loader.get_slot_updates(scenario_name)
+    expected_intent = loader.get_expected_intent(scenario_name)
+    
     conversation = system["conversation"]
-
-    print("\n" + "="*70)
-    print("🧪 SLOT FILLING TEST - SIMULATED")
-    print("="*70)
-
-    # Test Case 1: Order pizza (missing slots)
-    print("\n🧪 TEST 1: Order pizza (missing slots)")
-    print("-" * 40)
-
-    user_input = "I want to order a pizza"
-    print(f"🎤 User: '{user_input}'")
-
-    # NLU parsing
-    nlu_result = system["nlu"].parse(user_input)
-    print(f"🧠 NLU: intent='{nlu_result.intent}', entities={nlu_result.entities}")
-
-    # Process through conversation (session id used for context)
-    response = conversation.handle_message(user_input, session_id="test-session")
-    print(f"💬 Initial response: {response}")
-
-    # Check missing slots
+    nlu = system["nlu"]
+    
+    print(f"\n🧪 TEST: {scenario.get('name')}")
+    print("-" * 60)
+    print(f"📝 {scenario.get('description')}")
+    print(f"🎤 User Input: '{user_input}'")
+    print(f"🎯 Expected Intent: {expected_intent}\n")
+    
+    # Step 1: NLU parsing
+    nlu_result = nlu.parse(user_input)
+    print(f"✓ NLU Result: intent='{nlu_result.intent}', entities={nlu_result.entities}")
+    
+    # Step 2: Process through conversation manager
+    response = conversation.handle_message(user_input, session_id=f"test-{scenario_name}")
+    print(f"✓ Response: {response}")
+    
+    # Step 3: Check missing slots and apply configured updates
     if conversation.state and conversation.state.missing_slots():
         missing = conversation.state.missing_slots()
         print(f"❓ Missing slots: {missing}")
-
-        print("💬 LLM Prompt would be:")
-        print("   'Please provide the required information.'")
-        print(f"   Missing: {missing}")
-
-        # Simulate user providing slot values
-        print("\n📝 Simulating user providing slot values:")
-        conversation.state.update_slot("order_type", "delivery")
-        print("   ✓ Set order_type = 'delivery'")
-        conversation.state.update_slot("quantity_per_item", "2")
-        print("   ✓ Set quantity_per_item = '2'")
-
-        # Check if all slots filled
+        
+        # Apply slot updates from configuration
+        if slot_updates:
+            print("\n📋 Applying configured slot updates:")
+            for slot_name, slot_value in slot_updates.items():
+                conversation.state.update_slot(slot_name, slot_value)
+                print(f"   ✓ {slot_name} = '{slot_value}'")
+            print()
+        
+        # Check if all slots filled now
         if not conversation.state.missing_slots():
-            print("\n✅ All slots filled! Ready to execute.")
-            print("📊 Final state:")
+            print("✅ All slots filled! Ready to execute.")
+            print(f"📊 Final state:")
+            print(f"   Intent: {conversation.state.intent}")
+            print(f"   Slots: {conversation.state.slots}")
+            
+            # Execute handler if available
+            handler = system["conversation"].registry.get_handler(conversation.state.intent)
+            if handler:
+                result = handler(conversation.state)
+                print(f"✓ Handler Result: {result}")
+    else:
+        print("✅ No missing slots - executed immediately")
+        if conversation.state:
+            print(f"📊 State:")
             print(f"   Intent: {conversation.state.intent}")
             print(f"   Slots: {conversation.state.slots}")
 
-            # Ask for confirmation (simulated)
-            confirm = "y"  # Simulate user saying yes
-            print(f"⚡ Execute? (simulated: {confirm})")
 
-            if confirm == 'y':
-                handler = conversation.registry.get_handler(conversation.state.intent)
-                if handler:
-                    result = handler(conversation.state)
-                    print(f"✅ Handler Result: {result}")
-                else:
-                    print("❌ No handler found")
-
-    # Test Case 2: Complete request (no missing slots)
-    print("\n\n🧪 TEST 2: Show menu (complete request)")
-    print("-" * 40)
-
-    conversation.state = None  # Reset conversation
-    user_input = "show me the menu"
-    print(f"🎤 User: '{user_input}'")
-
-    nlu_result = system["nlu"].parse(user_input)
-    print(f"🧠 NLU: intent='{nlu_result.intent}', entities={nlu_result.entities}")
-
-    response = conversation.handle_message(user_input, session_id="test-session")
-    print(f"💬 Response: {response}")
-
-    if conversation.state:
-        missing = conversation.state.missing_slots()
-        if missing:
-            print(f"❓ Missing: {missing}")
-        else:
-            print("✅ No missing slots - executed immediately")
-
+def main():
+    """Main test runner - uses configuration-driven approach"""
+    
     print("\n" + "="*70)
-    print("✓ Slot filling test completed!")
+    print("🧪 SLOT FILLING TESTS - CONFIGURATION-DRIVEN")
+    print("="*70)
+    print("All test data loaded from testdata.JSON - No hardcoding!\n")
+    
+    # Step 1: Load test configuration
+    try:
+        loader = TestDataLoader()
+        print("✅ Test scenarios loaded from testdata.JSON\n")
+    except FileNotFoundError as e:
+        print(f"❌ Error: {e}")
+        return
+    
+    # Step 2: Build system
+    print("🔧 Building system...")
+    system = build_system()
+    print("✅ System built successfully!\n")
+    
+    # Step 3: Run configured test scenarios
+    test_scenarios = [
+        "pizza_order_incomplete",
+        "show_menu",
+    ]
+    
+    for scenario_name in test_scenarios:
+        if scenario_name in loader.scenario_names():
+            run_test_scenario(scenario_name, loader, system)
+    
+    print("\n" + "="*70)
+    print("✓ Configuration-driven slot filling tests completed!")
+    print("="*70)
 
 
 if __name__ == "__main__":
-    simulate_slot_filling_test()
+    main()

@@ -1,13 +1,17 @@
 """
 Templated Handler functions - reads all business logic from JSON
 No hardcoded responses, menu items, or business data
+Supports Sinhala language responses
 """
+
+from utils.sinhala_utils import format_sinhala_response, detect_sinhala_content
 
 
 class GenericHandler:
     """
     Generic handler that reads business data and response templates from JSON.
     Completely templated - works for any business type.
+    Supports Sinhala language output.
 
     Optionally holds references to a RAG store and conversation context memory
     so individual handler methods can query external knowledge or history.
@@ -30,7 +34,16 @@ class GenericHandler:
         self.rag = rag_store
         self.context = context_memory
 
-    def handle_view_menu_overview(self, state):
+    def _format_response(self, response, use_sinhala=True):
+        """
+        Format response based on language preference.
+        If use_sinhala is True, translates to Sinhala with numeral conversion.
+        """
+        if use_sinhala:
+            return format_sinhala_response(response)
+        return response
+
+    def handle_view_menu_overview(self, state, use_sinhala=True):
         """Show general menu overview - reads categories from JSON.
 
         If a RAG store is available we attempt a quick lookup before recomputing
@@ -41,12 +54,13 @@ class GenericHandler:
         if self.rag:
             cached = self.rag.get("menu_overview")
             if cached:
-                return cached
+                return self._format_response(cached, use_sinhala)
 
         categories = self.menu_data.get("categories", {})
 
         if not categories:
-            return "📋 Our menu is currently being updated. Please check back later."
+            response = "📋 Our menu is currently being updated. Please check back later."
+            return self._format_response(response, use_sinhala)
 
         response = "📋 Our Menu:\n"
         for cat_key, cat_data in categories.items():
@@ -56,14 +70,15 @@ class GenericHandler:
         if self.promotions:
             response += "- Promotions available!"
 
-        return response
+        return self._format_response(response, use_sinhala)
 
-    def handle_view_menu_by_category(self, state):
+    def handle_view_menu_by_category(self, state, use_sinhala=True):
         """Show items by category - reads from JSON menu data"""
         category = state.slots.get("category")
 
         if not category:
-            return "Please specify which category you'd like to see."
+            response = "Please specify which category you'd like to see."
+            return self._format_response(response, use_sinhala)
 
         categories = self.menu_data.get("categories", {})
 
@@ -75,13 +90,15 @@ class GenericHandler:
                 break
 
         if not category_data:
-            return f"Sorry, we don't have a '{category}' category."
+            response = f"Sorry, we don't have a '{category}' category."
+            return self._format_response(response, use_sinhala)
 
         cat_name = category_data.get("name", category.title())
         items = category_data.get("items", {})
 
         if not items:
-            return f"📋 {cat_name} category is currently empty."
+            response = f"📋 {cat_name} category is currently empty."
+            return self._format_response(response, use_sinhala)
 
         response = f"🍽️ {cat_name}:\n"
         for item_key, item_data in items.items():
@@ -89,14 +106,15 @@ class GenericHandler:
             price = item_data.get("price", "N/A")
             response += f"- {name} - ${price}\n"
 
-        return response
+        return self._format_response(response, use_sinhala)
 
-    def handle_view_menu_item(self, state):
+    def handle_view_menu_item(self, state, use_sinhala=True):
         """Show details about specific menu item - reads from JSON"""
         item_name = state.slots.get("item_name")
 
         if not item_name:
-            return "Please specify which item you'd like details for."
+            response = "Please specify which item you'd like details for."
+            return self._format_response(response, use_sinhala)
 
         # Search through all categories for the item
         categories = self.menu_data.get("categories", {})
@@ -113,22 +131,25 @@ class GenericHandler:
                     description = item_data.get("description", "A delicious menu item")
                     price = item_data.get("price", "N/A")
 
-                    return f"🍽️ {name} - ${price}\n{description}"
+                    response = f"🍽️ {name} - ${price}\n{description}"
+                    return self._format_response(response, use_sinhala)
 
-        return f"❌ Sorry, we don't have '{item_name}' on our menu."
+        response = f"❌ Sorry, we don't have '{item_name}' on our menu."
+        return self._format_response(response, use_sinhala)
 
-    def handle_view_promotions(self, state):
+    def handle_view_promotions(self, state, use_sinhala=True):
         """Show current promotions - reads from JSON"""
         if not self.promotions:
-            return "🎉 No current promotions available."
+            response = "🎉 No current promotions available."
+            return self._format_response(response, use_sinhala)
 
         response = "🎉 Current Promotions:\n"
         for promo in self.promotions:
             response += f"- {promo}\n"
 
-        return response
+        return self._format_response(response, use_sinhala)
 
-    def handle_view_locations(self, state):
+    def handle_view_locations(self, state, use_sinhala=True):
         """Show store locations - reads from JSON"""
         location_query = state.slots.get("location_query")
 
@@ -136,33 +157,32 @@ class GenericHandler:
             # Try to find specific location
             for loc_key, address in self.locations.items():
                 if loc_key.lower() in location_query.lower() or location_query.lower() in loc_key.lower():
-                    return f"📍 {loc_key.title()} Location:\n{address}"
+                    response = f"📍 {loc_key.title()} Location:\n{address}"
+                    return self._format_response(response, use_sinhala)
 
-            return f"📍 Locations near '{location_query}':\n" + "\n".join(self.locations.values())
-
-        # Show all locations
-        if not self.locations:
-            return "📍 Location information is currently being updated."
+            response = f"📍 Locations near '{location_query}':\n" + "\n".join(self.locations.values())
+            return self._format_response(response, use_sinhala)
 
         response = "📍 Our Locations:\n"
         for loc_key, address in self.locations.items():
             response += f"- {loc_key.title()}: {address}\n"
+        
+        return self._format_response(response, use_sinhala)
 
-        return response
-
-    def handle_view_hours(self, state):
+    def handle_view_hours(self, state, use_sinhala=True):
         """Show business hours - reads from JSON"""
         if not self.hours:
-            return "🕐 Hours information is currently being updated."
+            response = "🕐 Hours information is currently being updated."
+            return self._format_response(response, use_sinhala)
 
         response = "🕐 Business Hours:\n"
         for period, hours in self.hours.items():
             period_name = period.replace("_", " ").title()
             response += f"- {period_name}: {hours}\n"
 
-        return response
+        return self._format_response(response, use_sinhala)
 
-    def handle_start_order(self, state):
+    def handle_start_order(self, state, use_sinhala=True):
         """Handle order initiation - generic response"""
         items = state.slots.get("order_items")
         order_type = state.slots.get("order_type")
@@ -174,19 +194,22 @@ class GenericHandler:
             response += f" Order type: {order_type}."
 
         response += " Processing your order..."
-        return response
+        return self._format_response(response, use_sinhala)
 
-    def handle_modify_order(self, state):
+    def handle_modify_order(self, state, use_sinhala=True):
         """Handle order modification"""
-        return "✏️ Order modification initiated. What would you like to change?"
+        response = "✏️ Order modification initiated. What would you like to change?"
+        return self._format_response(response, use_sinhala)
 
-    def handle_cancel_order(self, state):
+    def handle_cancel_order(self, state, use_sinhala=True):
         """Handle order cancellation"""
-        return "❌ Order cancelled successfully. Is there anything else I can help with?"
+        response = "❌ Order cancelled successfully. Is there anything else I can help with?"
+        return self._format_response(response, use_sinhala)
 
-    def handle_track_order(self, state):
+    def handle_track_order(self, state, use_sinhala=True):
         """Handle order tracking"""
-        return "📦 Your order is being prepared. Estimated time: 20 minutes."
+        response = "📦 Your order is being prepared. Estimated time: 20 minutes."
+        return self._format_response(response, use_sinhala)
 
 
 # Create handler instance - will be initialized with business data

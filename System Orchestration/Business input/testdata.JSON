@@ -1,0 +1,76 @@
+{
+  "version": "1.0",
+  "description": "Test scenarios configuration - completely template-based, no hardcoding in code",
+  "test_scenarios": {
+    "pizza_order_incomplete": {
+      "name": "Pizza Order with Missing Slots",
+      "description": "User orders pizza but missing order_type and quantity",
+      "input": "I want to order a pizza",
+      "expected_intent": "start_order",
+      "expected_entities": {
+        "order_items": ["pizza"]
+      },
+      "slot_updates": {
+        "order_type": "delivery",
+        "quantity_per_item": "2"
+      },
+      "expected_in_response": ["missing", "information"]
+    },
+    "show_menu": {
+      "name": "Show Menu",
+      "description": "User requests to see the menu",
+      "input": "show me the menu",
+      "expected_intent": "view_menu",
+      "expected_entities": {},
+      "slot_updates": {},
+      "expected_in_response": ["menu", "burgers", "pizza"]
+    },
+    "view_burgers": {
+      "name": "View Burger Category",
+      "description": "User asks about burgers",
+      "input": "What are your burgers",
+      "expected_intent": "view_menu_category",
+      "expected_entities": {
+        "category": "burgers"
+      },
+      "slot_updates": {},
+      "expected_in_response": ["burger", "classic", "price"]
+    },
+    "burger_details": {
+      "name": "View Burger Details",
+      "description": "User wants details about a specific burger",
+      "input": "Tell me about the burger",
+      "expected_intent": "view_menu_item",
+      "expected_entities": {
+        "item_name": "burger"
+      },
+      "slot_updates": {},
+      "expected_in_response": ["classic burger", "price"]
+    },
+    "sinhala_order": {
+      "name": "Sinhala Pizza Order",
+      "description": "User orders in Sinhala language",
+      "input": "පීසා ඉල්ලුම් කරනවා",
+      "expected_intent": "start_order",
+      "expected_entities": {
+        "order_items": ["pizza"]
+      },
+      "slot_updates": {
+        "order_type": "delivery",
+        "quantity_per_item": "2"
+      },
+      "expected_language": "sinhala_mixed"
+    },
+    "mixed_language": {
+      "name": "Mixed English-Sinhala",
+      "description": "User inputs mix of English and Sinhala",
+      "input": "මට pizza ඉල්ලුම් කරන්නද",
+      "expected_intent": "start_order",
+      "expected_entities": {
+        "order_items": ["pizza"]
+      },
+      "expected_language": "sinhala_mixed"
+    }
+  },
+  "default_scenario": "pizza_order_incomplete"
+}

@@ -1,0 +1,47 @@
+# Core Dependencies
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Async/Real-time
+websockets==12.0
+aiohttp==3.9.1
+asyncio==3.4.3
+
+# Audio Processing
+pyaudio==0.2.13
+numpy==1.24.3
+scipy==1.11.4
+
+# Database & Caching
+redis==5.0.1
+aioredis==2.0.1
+
+# Vector DB
+pymilvus==2.3.4
+
+# STT/TTS (Placeholder - add specific provider SDKs as needed)
+google-cloud-speech==2.23.0
+google-cloud-texttospeech==2.14.1
+boto3==1.28.85
+azure-cognitiveservices-speech==1.33.1
+
+# Call Integration (Placeholder - add specific adapters)
+twilio==8.11.0
+
+# Logging & Monitoring
+python-json-logger==2.0.7
+structlog==23.2.0
+
+# Configuration
+python-dotenv==1.0.0
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+
+# Utilities
+requests==2.31.0
+python-dateutil==2.8.2

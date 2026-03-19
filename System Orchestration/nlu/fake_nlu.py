@@ -1,18 +1,28 @@
 """
 Templated NLU module - Intent classifier + Entity extractor
+Supports English and Sinhala with mixed language input
 Reads all configuration from JSON files, no hardcoded business logic
 """
 
+from utils.sinhala_utils import (
+    SINHALA_KEYWORDS,
+    detect_sinhala_content,
+    extract_sinhala_words,
+)
+
+
 class NLUResult:
-    def __init__(self, intent, entities, confidence=1.0):
+    def __init__(self, intent, entities, confidence=1.0, language="english"):
         self.intent = intent
         self.entities = entities
         self.confidence = confidence
+        self.language = language  # Track the detected language
 
 
 class FakeNLU:
     """
     Templated NLU that reads intent keywords and entity patterns from JSON.
+    Supports mixed English and Sinhala language input.
     Completely generic - works for any business by changing JSON files.
     """
 
@@ -40,38 +50,42 @@ class FakeNLU:
     def parse(self, text):
         """
         Parse user input and return intent + entities
+        Supports both English and Sinhala (including mixed input)
         Uses JSON-configured keywords and patterns
         """
         text_lower = text.lower()
+        
+        # Detect language
+        has_sinhala = detect_sinhala_content(text)
+        language = "sinhala_mixed" if has_sinhala else "english"
 
-        # Step 1: Classify intent using JSON keywords
-        detected_intent = self._detect_intent(text_lower)
+        # Step 1: Classify intent using JSON keywords (English + Sinhala)
+        detected_intent = self._detect_intent(text_lower, text, has_sinhala)
 
-        # Step 2: Extract entities using JSON patterns
-        entities = self._extract_entities(text_lower, detected_intent)
+        # Step 2: Extract entities using JSON patterns (pass both original and lowercased for proper matching)
+        entities = self._extract_entities(text, text_lower, detected_intent)
 
-        return NLUResult(intent=detected_intent, entities=entities)
+        return NLUResult(intent=detected_intent, entities=entities, language=language)
 
-    def _detect_intent(self, text):
-        """Intent detection using JSON-configured keywords with improved specificity"""
+    def _detect_intent(self, text, original_text, has_sinhala):
+        """Intent detection using JSON-configured keywords with Sinhala support"""
         intent_scores = {}
 
-        # First pass: collect all matching keywords
+        # First pass: collect English keyword matches
         matching_keywords = []
         for keyword, intent_list in self.intent_keywords.items():
             if keyword in text:
                 matching_keywords.append((keyword, intent_list))
 
-        # Score intents based on keyword specificity and exclusivity
+        # Score intents based on English keywords
         for keyword, intent_list in matching_keywords:
             # Calculate base specificity score
             word_count = len(keyword.split())
             base_score = len(keyword) * word_count
 
             # Check how many intents this keyword maps to (exclusivity)
-            exclusivity_factor = 1.0 / len(intent_list)  # Higher score for exclusive keywords
+            exclusivity_factor = 1.0 / len(intent_list)
 
-            # Boost exclusive keywords more significantly
             if len(intent_list) == 1:
                 exclusivity_factor = 2.0  # Double score for exclusive keywords
             else:
@@ -85,6 +99,16 @@ class FakeNLU:
                     intent_scores[intent] = 0
                 intent_scores[intent] += specificity_score
 
+        # Second pass: if Sinhala detected, also check Sinhala keywords
+        if has_sinhala:
+            for intent_name, sinhala_keywords in SINHALA_KEYWORDS.items():
+                for sinhala_keyword in sinhala_keywords:
+                    if sinhala_keyword in original_text:
+                        if intent_name not in intent_scores:
+                            intent_scores[intent_name] = 0
+                        # Give good score to Sinhala matches (slightly less than exclusive English)
+                        intent_scores[intent_name] += 1.5
+
         # Return intent with highest score, or fallback
         if intent_scores:
             best_intent = max(intent_scores.items(), key=lambda x: x[1])[0]
@@ -92,8 +116,14 @@ class FakeNLU:
 
         return self.fallback_intent
 
-    def _extract_entities(self, text, intent):
-        """Extract named entities using JSON-configured patterns"""
+    def _extract_entities(self, text, text_lower, intent):
+        """Extract named entities using JSON-configured patterns
+        
+        Args:
+            text: Original text (for Sinhala pattern matching)
+            text_lower: Lowercased text (for English pattern matching) 
+            intent: The detected intent
+        """
         entities = {}
 
         # Get intent definition to understand what slots it expects
@@ -105,10 +135,10 @@ class FakeNLU:
             slot_type = slot_config.get("type", "string")
 
             if slot_type == "enum":
-                # For enum slots, check allowed values
+                # For enum slots, check allowed values (case-insensitive for English, exact for Sinhala)
                 allowed_values = slot_config.get("allowed_values", [])
                 for value in allowed_values:
-                    if value in text:
+                    if value.lower() in text_lower or value in text:
                         entities[slot_name] = value
                         break
 
@@ -131,7 +161,8 @@ class FakeNLU:
                 if pattern_name in self.entity_patterns:
                     patterns = self.entity_patterns[pattern_name]
                     for pattern in patterns:
-                        if pattern in text:
+                        # Match both original (Sinhala) and lowercase (English) text
+                        if pattern in text or pattern.lower() in text_lower:
                             if slot_type == "list<string>":
                                 # For lists, collect all matches
                                 if slot_name not in entities:

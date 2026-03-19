@@ -8,11 +8,11 @@
   "nlu_config": {
     "fallback_intent": "global_browse",
     "entity_patterns": {
-      "item_name": ["pizza", "burger", "fries", "chicken", "salad", "drink", "cola", "soda"],
+      "item_name": ["pizza", "burger", "fries", "chicken", "salad", "drink", "cola", "soda", "පීසා", "බර්ගර්", "කුකුල්", "සලාද", "පානය", "කෝලා"],
       "category": ["burgers", "buckets", "sides", "drinks", "pizzas"],
       "location_query": ["downtown", "mall", "airport", "city center", "near me"],
-      "order_type": ["delivery", "pickup", "dine-in"],
-      "quantity": ["one", "two", "three", "1", "2", "3", "single", "double", "triple"]
+      "order_type": ["delivery", "pickup", "dine-in", "ඩෙලිවරි"],
+      "quantity": ["one", "two", "three", "1", "2", "3", "single", "double", "triple", "එක", "දෙක", "තුන"]
     }
   },
   "business_data": {
@@ -214,7 +214,7 @@
         },
         "delivery_address": {
           "type": "string",
-          "required": false,
+          "required": true,
           "prompt": "What is your delivery address?",
           "reprompt": "Please tell me where we should deliver the order.",
           "dependencies": ["order_type"]
