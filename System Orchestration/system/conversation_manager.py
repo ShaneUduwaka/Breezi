@@ -68,5 +68,5 @@ class ConversationManager:
             if self.state:
                 self.memory.save(self.session_id, self.state.to_dict())
         except Exception:
-            # swallow memory errors so conversation continues even if Redis fails
+            # swallow memory errors so conversation continues
             pass

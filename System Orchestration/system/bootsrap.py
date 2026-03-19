@@ -40,9 +40,8 @@ def build_system(json_path=None):
     nlu_config = business_config.get("nlu_config", {})
 
     # memory stores (must be created before handlers so they can be injected)
-    redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-    rag_store = RagStore(redis_url)
-    context_mem = ContextMemory(redis_url)
+    rag_store = RagStore()
+    context_mem = ContextMemory()
 
     # Initialize handlers with business data and memory references
     initialize_handlers(business_data, rag_store=rag_store, context_memory=context_mem)

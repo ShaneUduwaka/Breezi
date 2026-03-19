@@ -6,6 +6,7 @@ Demonstrates the slot-filling flow with pre-defined inputs
 import sys
 import os
 from io import StringIO
+import json
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -13,31 +14,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from dialog.IntentRegistry import IntentRegistry
 from dialog.dialog_orchestrator import DialogOrchestrator
 from system.conversation_manager import ConversationManager
+from system.bootsrap import build_system
 
 from handlers.handler_mapping import HANDLERS
 from llm.fake_llm import FakeLLM
 from nlu.fake_nlu import FakeNLU
-
-
-def build_system():
-    """Build the simplified system for terminal testing"""
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    json_path = os.path.join(current_dir, "Business input", "intent.JSON")
-    json_path = os.path.abspath(json_path)
-
-    registry = IntentRegistry(json_path, handler_mapping=HANDLERS)
-    llm = FakeLLM()
-    orchestrator = DialogOrchestrator(registry, llm)
-    nlu = FakeNLU()
-    conversation = ConversationManager(registry, orchestrator, nlu)
-
-    return {
-        "conversation": conversation,
-        "orchestrator": orchestrator,
-        "nlu": nlu,
-        "registry": registry,
-        "llm": llm,
-    }
 
 
 def simulate_slot_filling_test():

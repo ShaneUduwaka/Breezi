@@ -10,41 +10,8 @@ import os
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from dialog.IntentRegistry import IntentRegistry
-from dialog.dialog_orchestrator import DialogOrchestrator
-from system.conversation_manager import ConversationManager
+from system.bootsrap import build_system
 from system.audio_io import DummySTT, DummyTTS
-
-from handlers.handler_mapping import HANDLERS
-from llm.fake_llm import FakeLLM
-from nlu.fake_nlu import FakeNLU
-
-
-def build_system():
-    """Build the complete AI Call Agent system"""
-    
-    # Load intent definitions from JSON
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    json_path = os.path.join(current_dir, "Business input", "intent.JSON")
-    
-    registry = IntentRegistry(json_path, handler_mapping=HANDLERS)
-    
-    # Initialize components
-    llm = FakeLLM()
-    orchestrator = DialogOrchestrator(registry, llm)
-    nlu = FakeNLU()
-    stt = DummySTT()
-    tts = DummyTTS()
-    
-    conversation = ConversationManager(registry, orchestrator, nlu)
-    
-    return {
-        "conversation": conversation,
-        "stt": stt,
-        "tts": tts,
-        "orchestrator": orchestrator,
-        "nlu": nlu,
-    }
 
 
 def demo_flow(system, verbose=True):
