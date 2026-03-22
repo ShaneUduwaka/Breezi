@@ -2,7 +2,6 @@ import asyncio
 import logging
 import numpy as np
 from typing import AsyncGenerator
-from collections import deque
 
 # Defer torch import to avoid failing if not installed yet
 try:
@@ -32,7 +31,7 @@ class AudioPipelineManager:
     VAD_RMS_THRESHOLD      = 800   # ignore quiet background noise (raise to reduce sensitivity)
     VAD_CONFIDENCE         = 0.90  # Silero confidence to count as speech (raise to reduce false positives)
     VAD_CONSECUTIVE_CHUNKS = 5     # chunks in a row needed to trigger barge-in (raise to require more sustained speech)
-    VAD_SILENCE_CHUNKS     = 40    # chunks of silence needed after speech to force a turn end (approx 1.2s)
+    VAD_SILENCE_CHUNKS     = 20    # chunks of silence needed after speech to force a turn end (approx 600ms)
     # ─────────────────────────────────────────────────────────────────────────
 
     def __init__(self, system):
@@ -67,7 +66,6 @@ class AudioPipelineManager:
         self.sessions[session_id] = {
             "in_queue":             asyncio.Queue(),
             "out_queue":            asyncio.Queue(),
-            "preroll_buffer":       deque(maxlen=40),  # ~1.2s of audio to catch speech while bot speaks
             "barge_in":             False,
             "vad_consecutive":      0,
             "silence_consecutive":  0,
@@ -174,13 +172,9 @@ class AudioPipelineManager:
             await sess["in_queue"].put(None) # Sentinel to break the STT generator
             return
 
-        if bot_is_speaking:
-            # Buffer audio while bot speaks so we don't lose the start of the next sentence
-            sess["preroll_buffer"].append(chunk)
-        else:
-            # Bot just stopped or isn't speaking — flush the pre-roll buffer first if needed
-            while sess["preroll_buffer"]:
-                await sess["in_queue"].put(sess["preroll_buffer"].popleft())
+        # Only queue audio if the bot isn't speaking (unless we want barge-in audio to be buffered)
+        # For simplicity and to avoid echo, we skip queueing while bot speaks.
+        if not bot_is_speaking:
             await sess["in_queue"].put(chunk)
 
     async def get_audio_stream(self, session_id: str) -> AsyncGenerator[bytes, None]:
@@ -231,7 +225,6 @@ class AudioPipelineManager:
                     # Reset turn-level VAD results
                     sess = self.sessions[session_id]
                     sess["speech_ever_detected"] = False
-                    sess["vad_consecutive"]      = 0      # Critical Bug 4 fix
                     sess["silence_consecutive"]  = 0
                     sess["end_of_turn"]           = False
                     
@@ -306,8 +299,7 @@ class AudioPipelineManager:
                         # Reset barge-in so the reply can play in full
                         self.sessions[session_id]["barge_in"] = False
 
-                        if not cleaned or len(cleaned) < 2:
-                            logger.info(f"🔇 Ignoring empty/short utterance for {session_id}")
+                        if cleaned is None:
                             continue
 
                         # ── Debug logging ──────────────────────────────────
