@@ -12,7 +12,8 @@
       "category": ["burgers", "buckets", "sides", "drinks", "pizzas"],
       "location_query": ["downtown", "mall", "airport", "city center", "near me"],
       "order_type": ["delivery", "pickup", "dine-in", "ඩෙලිවරි"],
-      "quantity": ["one", "two", "three", "1", "2", "3", "single", "double", "triple", "එක", "දෙක", "තුන"]
+      "quantity": ["one", "two", "three", "1", "2", "3", "single", "double", "triple", "එක", "දෙක", "තුන"],
+      "delivery_address": ["main st", "oak ave", "maple dr", "pine rd", "street", "avenue", "road", "drive", "circle", "lane", "blvd", "plaza", "plaza", "downtown", "uptown", "north", "south", "east", "west"]
     }
   },
   "business_data": {
@@ -190,7 +191,6 @@
 
     "order_flow": {
       "description": "Top-level order handling domain",
-      "nlu_keywords": ["order", "buy", "purchase", "get"],
       "hierarchy": { "parent": null, "children": ["start_order", "modify_order", "cancel_order", "track_order"] },
       "slots": {},
       "transitions": {
@@ -202,12 +202,13 @@
 
     "start_order": {
       "description": "Initiate a new order",
-      "nlu_keywords": ["order", "want to order", "i want", "can i have", "give me", "place order"],
+      "nlu_keywords": ["want to order", "place order", "new order", "can i have", "give me", "i'd like", "i would like", "let me order", "order for me"],
       "hierarchy": { "parent": "order_flow", "children": [] },
       "slots": {
         "order_type": {
           "type": "enum",
           "required": true,
+          "extraction_key": "order_type",
           "allowed_values": ["delivery", "pickup"],
           "prompt": "Is this for delivery or pickup?",
           "reprompt": "Please say delivery or pickup."
@@ -215,6 +216,7 @@
         "delivery_address": {
           "type": "string",
           "required": true,
+          "extraction_key": "delivery_address",
           "prompt": "What is your delivery address?",
           "reprompt": "Please tell me where we should deliver the order.",
           "dependencies": ["order_type"]
@@ -222,12 +224,14 @@
         "order_items": {
           "type": "list<string>",
           "required": true,
+          "extraction_key": "item_name",
           "prompt": "What items would you like to order?",
           "reprompt": "Please tell me the items you want to include in your order."
         },
         "quantity_per_item": {
           "type": "number",
           "required": true,
+          "extraction_key": "quantity",
           "prompt": "How many of each item?",
           "reprompt": "Please tell me quantities for each item."
         }
@@ -241,6 +245,7 @@
 
     "modify_order": {
       "description": "Modify an existing order before it's finalized",
+      "nlu_keywords": ["change my order", "modify order", "modify my order", "update order", "update my order", "change order", "alter order", "different", "change that", "switch item", "can you modify", "want to change"],
       "hierarchy": { "parent": "order_flow", "children": [] },
       "slots": {
         "order_id": {
@@ -265,6 +270,7 @@
 
     "cancel_order": {
       "description": "Cancel an existing order",
+      "nlu_keywords": ["cancel order", "cancel my order", "want to cancel", "i want to cancel", "cancel that", "never mind", "dont want","order cancel", "do not want", "forget that", "remove order", "delete order", "no i dont"],
       "hierarchy": { "parent": "order_flow", "children": [] },
       "slots": {
         "order_id": {
@@ -280,6 +286,7 @@
 
     "track_order": {
       "description": "Track the status of an order",
+      "nlu_keywords": ["track order", "where is my", "where's my", "what time", "status", "when will", "track my order", "check status"],
       "hierarchy": { "parent": "order_flow", "children": [] },
       "slots": {
         "order_id": {

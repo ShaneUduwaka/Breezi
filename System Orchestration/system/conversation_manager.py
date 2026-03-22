@@ -139,31 +139,43 @@ class ConversationManager:
                             break
                 
                 else:
-                    # For string/list slots, use entity patterns
-                    pattern_mappings = {
-                        "order_items": "item_name",
-                        "item_name": "item_name",
-                        "category": "category",
-                        "location_query": "location_query",
-                        "order_type": "order_type",
-                        "quantity": "quantity",
-                        "quantity_per_item": "quantity"
-                    }
-                    
-                    pattern_name = pattern_mappings.get(slot_name, slot_name)
+                    # For string/list slots, use extraction_key from JSON (TEMPLATE-DRIVEN)
+                    extraction_key = slot_config.get("extraction_key", slot_name)
                     
                     # Get entity patterns from NLU
                     if hasattr(self.nlu, 'entity_patterns'):
-                        entity_patterns = self.nlu.entity_patterns.get(pattern_name, [])
-                        for pattern in entity_patterns:
-                            # Match both original (Sinhala) and lowercase (English)
-                            if pattern in text or pattern.lower() in text_lower:
-                                if slot_type == "list<string>":
-                                    if slot_name not in state.slots or state.slots[slot_name] is None:
-                                        state.update_slot(slot_name, [pattern])
-                                    elif isinstance(state.slots[slot_name], list):
-                                        if pattern not in state.slots[slot_name]:
-                                            state.slots[slot_name].append(pattern)
-                                else:
-                                    state.update_slot(slot_name, pattern)
-                                break
+                        entity_patterns = self.nlu.entity_patterns.get(extraction_key, [])
+                        
+                        # Special handling for delivery_address (multi-part extraction)
+                        if extraction_key == "delivery_address":
+                            # Try to find address patterns
+                            address_found = False
+                            for pattern in entity_patterns:
+                                if pattern in text or pattern.lower() in text_lower:
+                                    # Found an address keyword, extract surrounding context
+                                    words = text.split()
+                                    for i, word in enumerate(words):
+                                        if word.lower() == pattern.lower() or pattern in word.lower():
+                                            # Extract surrounding words as likely address components
+                                            start = max(0, i - 3)  # Get up to 3 words before
+                                            end = min(len(words), i + 2)  # Get up to 2 words after
+                                            detected_address = " ".join(words[start:end])
+                                            state.update_slot(slot_name, detected_address)
+                                            address_found = True
+                                            break
+                                    if address_found:
+                                        break
+                        else:
+                            # Regular pattern matching for non-address strings
+                            for pattern in entity_patterns:
+                                # Match both original (Sinhala) and lowercase (English)
+                                if pattern in text or pattern.lower() in text_lower:
+                                    if slot_type == "list<string>":
+                                        if slot_name not in state.slots or state.slots[slot_name] is None:
+                                            state.update_slot(slot_name, [pattern])
+                                        elif isinstance(state.slots[slot_name], list):
+                                            if pattern not in state.slots[slot_name]:
+                                                state.slots[slot_name].append(pattern)
+                                    else:
+                                        state.update_slot(slot_name, pattern)
+                                    break

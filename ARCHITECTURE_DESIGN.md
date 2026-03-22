@@ -52,7 +52,7 @@ End-to-end architecture for real-time phone conversations with AI-powered order 
     │   (sessions) │ │ (similarity) │ │   Base       │
     │              │ │              │ │  (wrapper)   │
     └──────────────┘ └──────────────┘ └──────────────┘
-                            
+
                      ↓ (response audio)
 ┌─────────────────────────────────────────────────────────────────────┐
 │                  AUDIO STREAMING GATEWAY                            │
@@ -118,7 +118,7 @@ class CallIngestorBase:
     async def receive_audio_chunk(self) -> AudioChunk:
         """Receive audio frame from call source"""
         pass
-    
+
     async def send_audio_chunk(self, audio: AudioChunk):
         """Send audio frame back to caller"""
         pass
@@ -154,11 +154,11 @@ class AudioStreamingGateway:
     - Codec handling
     - Session routing
     """
-    
+
     def __init__(self):
         self.active_sessions = {}  # session_id -> audio_buffer
         self.audio_buffer_size = 4000  # 250ms at 16kHz
-    
+
     async def handle_incoming_audio(self, session_id, audio_chunk):
         """Process incoming audio"""
         # 1. Add to buffer
@@ -166,7 +166,7 @@ class AudioStreamingGateway:
         # 3. Pass to STT when ready
         # 4. Route text to System Orchestration
         pass
-    
+
     async def send_response_audio(self, session_id, audio_chunk):
         """Send response audio back"""
         # 1. Queue audio frames
@@ -187,7 +187,7 @@ class STTClient:
     Multi-provider STT with streaming support
     Providers: Google Cloud Speech-to-Text, AWS Transcribe, Azure Speech
     """
-    
+
     async def transcribe_stream(self, audio_stream, session_id):
         """
         Real-time streaming transcription
@@ -201,7 +201,7 @@ async for result in stt.transcribe_stream(audio_stream, session_id):
     if result.is_final:
         # Send to System Orchestration
         response = await orchestration.handle_message(
-            result.text, 
+            result.text,
             session_id=session_id
         )
 ```
@@ -215,46 +215,46 @@ async for result in stt.transcribe_stream(audio_stream, session_id):
 ```python
 # system/conversation_manager.py (ENHANCED)
 class ConversationManager:
-    
+
     async def handle_message(self, text, session_id):
         # 1. NLU Processing
         nlu_result = self.nlu.parse(text)
-        
+
         # 2. Intent Processing
         intent_handler = self.get_handler(nlu_result.intent)
-        
+
         # 3. STATE MANAGEMENT
         state = self.state_manager.get_state(session_id)
-        
+
         # 4. HANDLER EXECUTION (with optional DB lookup)
         response = await intent_handler.execute(
             nlu_result,
             state,
             client_db_accessor=self.client_db  # PASS DB ACCESSOR
         )
-        
+
         # 5. Save state
         await self.state_manager.save_state(session_id, state)
-        
+
         return response
 
 # handlers/order_handlers.py (ENHANCED)
 class StartOrderHandler:
-    
+
     async def execute(self, nlu_result, state, client_db_accessor):
         # Check if we need to fetch menu from client DB
         if state.needs_menu_refresh():
             # Query client database for current menu/stock
             menu = await client_db_accessor.get_menu()
             stock = await client_db_accessor.get_stock()
-            
+
             # Update internal state with fresh data
             state.update_menu(menu)
             state.update_stock(stock)
-        
+
         # Continue with order processing
         # ...
-        
+
         return response
 ```
 
@@ -271,7 +271,7 @@ class TTSClient:
     Multi-provider TTS with streaming support
     Providers: Google Cloud Text-to-Speech, AWS Polly, Azure Speech
     """
-    
+
     async def synthesize_stream(self, text, session_id, language="en"):
         """
         Real-time streaming synthesis
@@ -295,19 +295,19 @@ async for audio_chunk in tts.synthesize_stream(response_text):
 # adapters/client_db/base.py
 class ClientDatabaseBase:
     """Abstract base for client database access"""
-    
+
     async def get_menu(self) -> Menu:
         """Get current menu items"""
         pass
-    
+
     async def get_stock(self) -> Dict[str, int]:
         """Get current stock levels"""
         pass
-    
+
     async def place_order(self, order_data) -> OrderConfirmation:
         """Submit completed order"""
         pass
-    
+
     async def check_delivery_zones(self, address) -> bool:
         """Validate delivery zone"""
         pass
@@ -318,7 +318,7 @@ class RESTClientDB(ClientDatabaseBase):
     def __init__(self, api_endpoint, api_key):
         self.api_endpoint = api_endpoint
         self.api_key = api_key
-    
+
     async def get_menu(self):
         response = await self.client.get(
             f"{self.api_endpoint}/menu",
@@ -331,7 +331,7 @@ class SQLClientDB(ClientDatabaseBase):
     """Connect directly to SQL database"""
     def __init__(self, connection_string):
         self.db = Database(connection_string)
-    
+
     async def get_menu(self):
         rows = await self.db.query("SELECT * FROM menu_items WHERE active=1")
         return Menu.from_rows(rows)
@@ -359,12 +359,12 @@ class ClientDBFactory:
 # system/state_manager.py
 class StateManager:
     """Manage conversation state in Redis"""
-    
+
     async def get_state(self, session_id):
         """Get state from Redis"""
         data = await self.redis.get(f"session:{session_id}")
         return ConversationState.from_json(data)
-    
+
     async def save_state(self, session_id, state):
         """Save state to Redis with TTL"""
         await self.redis.setex(
@@ -424,12 +424,12 @@ System Orchestration/
 
 ### FastRTC Evaluation
 
-| Aspect | FastRTC | Why Use | Why NOT Use |
-|--------|---------|---------|-----------|
-| **Purpose** | WebRTC library | Browser audio | Already have Twilio/VoIP |
-| **Latency** | Low (~50ms) | ✅ Real-time | ❌ Can introduce extra complexity |
-| **Use case** | Peer-to-peer | ✅ If browser-based | ❌ Old VoIP systems don't support |
-| **Maintenance** | Community-driven | - | ⚠️ May need forking |
+| Aspect          | FastRTC          | Why Use             | Why NOT Use                       |
+| --------------- | ---------------- | ------------------- | --------------------------------- |
+| **Purpose**     | WebRTC library   | Browser audio       | Already have Twilio/VoIP          |
+| **Latency**     | Low (~50ms)      | ✅ Real-time        | ❌ Can introduce extra complexity |
+| **Use case**    | Peer-to-peer     | ✅ If browser-based | ❌ Old VoIP systems don't support |
+| **Maintenance** | Community-driven | -                   | ⚠️ May need forking               |
 
 ### **Recommendation: Hybrid Approach**
 
@@ -470,10 +470,10 @@ Audio Transport OPTIONS:
 class ViewMenuItemHandler:
     async def execute(self, nlu_result, state, client_db_accessor):
         item_name = nlu_result.entities.get("item_name")
-        
+
         # Query client database for product details
         product = await client_db_accessor.get_product(item_name)
-        
+
         if product and product.in_stock:
             return f"Yes, we have {item_name}! It costs ${product.price}"
         else:
@@ -494,10 +494,10 @@ class ConfirmOrderHandler:
             "delivery_type": state.slots["order_type"],
             "delivery_address": state.slots["delivery_address"]
         }
-        
+
         # Submit to client's database
         order_id = await client_db_accessor.place_order(order_data)
-        
+
         return f"Order confirmed! ID: {order_id}"
 ```
 
@@ -508,17 +508,16 @@ class ConfirmOrderHandler:
 ### docker-compose.yml (Full Stack)
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
-  
   # Main Application
   app:
     build: .
     container_name: breezi-orchestration
     ports:
-      - "8000:8000"  # Main API
-      - "8001:8001"  # Audio WebSocket
+      - "8000:8000" # Main API
+      - "8001:8001" # Audio WebSocket
     environment:
       - CALL_INGESTION_TYPE=${CALL_INGESTION_TYPE}
       - STT_PROVIDER=${STT_PROVIDER}
@@ -589,33 +588,39 @@ Total Latency:       200ms ✅
 ## 🔧 Implementation Roadmap
 
 ### PHASE 1: Audio Gateway (Days 1-2)
+
 - [ ] Audio streaming gateway
 - [ ] Support for audio chunking
 - [ ] Jitter buffer implementation
 
 ### PHASE 2: Call Ingestion Wrappers (Days 3-5)
+
 - [ ] Twilio adapter
 - [ ] Custom VoIP adapter
 - [ ] WebRTC adapter (optional)
 
 ### PHASE 3: STT/TTS Integration (Days 6-8)
+
 - [ ] STT client (multi-provider)
 - [ ] TTS client (multi-provider)
 - [ ] Streaming support
 
 ### PHASE 4: Database Abstraction (Days 9-10)
+
 - [ ] Base DB class
 - [ ] REST API adapter
 - [ ] SQL adapter
 - [ ] Factory pattern
 
 ### PHASE 5: System Integration (Days 11-14)
+
 - [ ] Update conversation manager
 - [ ] Update handlers
 - [ ] State persistence (Redis)
 - [ ] Full E2E testing
 
 ### PHASE 6: Docker & Deployment (Days 15-20)
+
 - [ ] Docker setup
 - [ ] docker-compose orchestration
 - [ ] Configuration management
@@ -625,15 +630,15 @@ Total Latency:       200ms ✅
 
 ## ✅ Key Decisions Made
 
-| Decision | Reasoning |
-|----------|-----------|
-| **Wrapper Pattern** | Supports multiple call sources without code duplication |
-| **StreamingPipeline** | Enables real-time audio processing (not waiting for full files) |
-| **Optional DB Queries** | Async to not block main conversation flow |
-| **Redis State** | Fast session recovery, distributed deployment ready |
-| **FastRTC Optional** | Keep flexibility - use what works for your call source |
-| **Adapter Pattern** | Client DB type doesn't matter - abstracted away |
-| **Docker Compose** | Local dev + staging - easily scales to K8s |
+| Decision                | Reasoning                                                       |
+| ----------------------- | --------------------------------------------------------------- |
+| **Wrapper Pattern**     | Supports multiple call sources without code duplication         |
+| **StreamingPipeline**   | Enables real-time audio processing (not waiting for full files) |
+| **Optional DB Queries** | Async to not block main conversation flow                       |
+| **Redis State**         | Fast session recovery, distributed deployment ready             |
+| **FastRTC Optional**    | Keep flexibility - use what works for your call source          |
+| **Adapter Pattern**     | Client DB type doesn't matter - abstracted away                 |
+| **Docker Compose**      | Local dev + staging - easily scales to K8s                      |
 
 ---
 

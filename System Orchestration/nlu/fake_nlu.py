@@ -133,6 +133,10 @@ class FakeNLU:
         # For each slot in the intent, try to extract values
         for slot_name, slot_config in slots.items():
             slot_type = slot_config.get("type", "string")
+            
+            # Use extraction_key from JSON to map to entity patterns
+            # Falls back to slot_name if extraction_key not defined
+            extraction_key = slot_config.get("extraction_key", slot_name)
 
             if slot_type == "enum":
                 # For enum slots, check allowed values (case-insensitive for English, exact for Sinhala)
@@ -143,36 +147,53 @@ class FakeNLU:
                         break
 
             elif slot_type in ["string", "list<string>"]:
-                # Map slot names to appropriate entity patterns
-                pattern_mappings = {
-                    "order_items": "item_name",
-                    "item_name": "item_name",
-                    "category": "category",
-                    "location_query": "location_query",
-                    "order_type": "order_type",
-                    "quantity": "quantity",
-                    "quantity_per_item": "quantity"
-                }
-
-                # Get the pattern name for this slot
-                pattern_name = pattern_mappings.get(slot_name, slot_name)
+                # Use extraction_key from JSON configuration (TEMPLATE-DRIVEN)
+                # This makes it fully configurable without hardcoding
+                pattern_name = extraction_key
 
                 # Use entity patterns from JSON to extract values
                 if pattern_name in self.entity_patterns:
                     patterns = self.entity_patterns[pattern_name]
-                    for pattern in patterns:
-                        # Match both original (Sinhala) and lowercase (English) text
-                        if pattern in text or pattern.lower() in text_lower:
-                            if slot_type == "list<string>":
-                                # For lists, collect all matches
-                                if slot_name not in entities:
-                                    entities[slot_name] = []
-                                if pattern not in entities[slot_name]:
-                                    entities[slot_name].append(pattern)
-                            else:
-                                # For single strings, take first match
-                                if slot_name not in entities:
-                                    entities[slot_name] = pattern
-                            break
+                    
+                    # Special handling for delivery_address (multi-part extraction)
+                    if extraction_key == "delivery_address":
+                        # Try to find address patterns 
+                        # Look for any text that contains address keywords
+                        address_found = False
+                        for pattern in patterns:
+                            if pattern in text or pattern.lower() in text_lower:
+                                # Found an address keyword, now try to extract the full address
+                                # For now, just mark that we found an address-related text
+                                # In a real system, you'd use NER or regex for full address extraction
+                                words = text.split()
+                                # Look for pattern (like "street", "avenue") and get surrounding context
+                                for i, word in enumerate(words):
+                                    if word.lower() == pattern.lower() or pattern in word.lower():
+                                        # Extract surrounding words as likely address components
+                                        start = max(0, i - 3)  # Get up to 3 words before
+                                        end = min(len(words), i + 2)  # Get up to 2 words after
+                                        detected_address = " ".join(words[start:end])
+                                        if slot_name not in entities:
+                                            entities[slot_name] = detected_address
+                                            address_found = True
+                                            break
+                                if address_found:
+                                    break
+                    else:
+                        # Regular pattern matching for non-address strings
+                        for pattern in patterns:
+                            # Match both original (Sinhala) and lowercase (English) text
+                            if pattern in text or pattern.lower() in text_lower:
+                                if slot_type == "list<string>":
+                                    # For lists, collect all matches
+                                    if slot_name not in entities:
+                                        entities[slot_name] = []
+                                    if pattern not in entities[slot_name]:
+                                        entities[slot_name].append(pattern)
+                                else:
+                                    # For single strings, take first match
+                                    if slot_name not in entities:
+                                        entities[slot_name] = pattern
+                                break
 
         return entities
