@@ -2,6 +2,9 @@ import os
 import json
 import logging
 from typing import Optional, Dict, Any
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from dialog.IntentRegistry import IntentRegistry
 from dialog.dialog_orchestrator import DialogOrchestrator
@@ -235,6 +238,7 @@ def build_system(json_path=None, use_phase1=True):
         logger.info(f"🎙️ Initializing STT client ({env_config['stt_provider']})...")
         stt_config = {
             "google_api_key": os.getenv("GOOGLE_CLOUD_STT_KEY"),
+            "gemini_api_key": os.getenv("GEMINI_API_KEY"),
             "aws_region": os.getenv("AWS_STT_REGION", "us-east-1"),
             "azure_key": os.getenv("AZURE_STT_KEY"),
             "language": os.getenv("STT_LANGUAGE", "en-US"),

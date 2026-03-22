@@ -1,0 +1,1 @@
+{"success":true,"session_id":"user1","response":"I need some information: order_type, quantity_per_item. Could you provide those details?","state":{"intent":"start_order","slots":{"order_type":null,"delivery_address":null,"order_items":["pizza"],"quantity_per_item":null},"missing_slots":["order_type","quantity_per_item"]}}

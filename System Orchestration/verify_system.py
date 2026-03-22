@@ -6,6 +6,9 @@ Checks all components are working correctly without Redis
 import sys
 import os
 
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8')
+
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -174,7 +177,7 @@ try:
     
     print("  • Processing menu request...", end=" ")
     response2 = conversation.handle_message("show me the menu", session_id="test2")
-    assert "menu" in response2.lower() or "burger" in response2.lower(), "Unexpected response!"
+    assert "menu" in response2.lower() or "burger" in response2.lower() or "මෙනුව" in response2 or "බර්ගර්" in response2, "Unexpected response!"
     print("✓")
     
     print("  • Verifying memory storage...", end=" ")

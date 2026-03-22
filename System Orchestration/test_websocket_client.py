@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 
-async def test_call_websocket(uri: str, session_id: str):
+async def run_call_websocket(uri: str, session_id: str):
     """
     Test real-time conversation via WebSocket
     
@@ -95,7 +95,7 @@ async def test_call_websocket(uri: str, session_id: str):
         sys.exit(1)
 
 
-async def test_audio_websocket(uri: str, session_id: str):
+async def run_audio_websocket(uri: str, session_id: str):
     """
     Test audio streaming via WebSocket
     
@@ -149,10 +149,10 @@ async def main():
     
     if test_type == "audio":
         uri = f"ws://localhost:8000/ws/audio/{session_id}"
-        await test_audio_websocket(uri, session_id)
+        await run_audio_websocket(uri, session_id)
     else:
         uri = f"ws://localhost:8000/ws/call/{session_id}"
-        await test_call_websocket(uri, session_id)
+        await run_call_websocket(uri, session_id)
 
 
 if __name__ == "__main__":

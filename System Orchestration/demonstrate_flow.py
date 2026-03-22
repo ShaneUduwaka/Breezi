@@ -10,7 +10,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from system.bootsrap import build_system
-from utils.test_data_loader import TestDataLoader
+from utils.test_data_loader import MockDataLoader
 
 
 def demonstrate_slot_filling():
@@ -24,7 +24,7 @@ def demonstrate_slot_filling():
 
     # Load test configuration
     try:
-        loader = TestDataLoader()
+        loader = MockDataLoader()
         print("✅ Test scenarios loaded from testdata.JSON\n")
     except FileNotFoundError as e:
         print(f"❌ Error: {e}")

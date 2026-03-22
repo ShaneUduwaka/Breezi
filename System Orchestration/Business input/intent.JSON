@@ -349,6 +349,24 @@
       "slots": {},
       "transitions": { "can_branch_to": [], "can_replace_with": [] },
       "handler": "handle_ask_contact_info"
+    },
+
+    "confirm_continue": {
+      "description": "User wants to ask something else",
+      "nlu_keywords": ["yes", "yeah", "yep", "sure", "actually", "also", "another", "one more", "something else", "ඔව්", "එහෙමයි"],
+      "hierarchy": { "parent": null, "children": [] },
+      "slots": {},
+      "transitions": { "can_branch_to": [], "can_replace_with": [] },
+      "handler": null
+    },
+
+    "confirm_end": {
+      "description": "User confirms they have no more requests",
+      "nlu_keywords": ["no", "nope", "nothing", "that's all", "no thanks", "i'm good", "all good", "done", "bye", "goodbye", "that's it", "no more", "නෑ", "එපා", "බෑ", "ස්තූතියි"],
+      "hierarchy": { "parent": null, "children": [] },
+      "slots": {},
+      "transitions": { "can_branch_to": [], "can_replace_with": [] },
+      "handler": null
     }
 
   }

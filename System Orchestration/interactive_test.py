@@ -10,7 +10,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from system.bootsrap import build_system
-from utils.test_data_loader import TestDataLoader
+from utils.test_data_loader import MockDataLoader
 
 
 def print_header():
@@ -180,7 +180,7 @@ def main():
     print_header()
     
     try:
-        loader = TestDataLoader()
+        loader = MockDataLoader()
         print("✅ Test scenarios loaded")
     except FileNotFoundError as e:
         print(f"❌ Error: {e}")
