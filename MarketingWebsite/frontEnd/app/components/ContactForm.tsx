@@ -18,11 +18,26 @@ export default function ContactForm() {
     // Native validation handles the checks before this event fires
     setStatus("loading");
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      const response = await fetch("http://localhost:8000/api/contact/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
-    setStatus("successs");
-    setFormData({ name: "", email: "", company: "", message: "" });
+      if (!response.ok) {
+        throw new Error("Failed to submit");
+      }
+
+      setStatus("success");
+      setFormData({ name: "", email: "", company: "", message: "" });
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      setStatus("idle"); // In a real app we might set an error state here
+      return; // Early return to avoid setting success state below
+    }
 
     // Reset status after delay
     setTimeout(() => {
