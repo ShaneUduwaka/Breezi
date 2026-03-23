@@ -20,7 +20,7 @@ input1 = "I want to order a pizza"
 print(f"User: {input1}")
 nlu_result = nlu.parse(input1)
 print(f"NLU: intent={nlu_result.intent}, entities={nlu_result.entities}, language={nlu_result.language}")
-response1 = conversation.handle_message(input1, session_id="test")
+response1 = conversation.handle_active_message(input1, session_id="test")
 print(f"Response: {response1}")
 if conversation.state:
     print(f"State slots: {conversation.state.slots}")
