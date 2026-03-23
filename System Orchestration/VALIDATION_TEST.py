@@ -8,6 +8,12 @@ import json
 import os
 import sys
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def project_path(*parts):
+    return os.path.join(BASE_DIR, *parts)
+
 print("\n" + "="*80)
 print("BREEZI SYSTEM - QUICK VALIDATION TEST")
 print("="*80 + "\n")
@@ -16,9 +22,9 @@ print("="*80 + "\n")
 print("[TEST 1] JSON Configuration Loading")
 print("-" * 80)
 try:
-    with open('Business input/intent.JSON', 'r', encoding='utf-8') as f:
+    with open(project_path('Business input', 'intent.JSON'), 'r', encoding='utf-8') as f:
         config = json.load(f)
-    with open('Business input/testdata.JSON', 'r', encoding='utf-8') as f:
+    with open(project_path('Business input', 'testdata.JSON'), 'r', encoding='utf-8') as f:
         testdata = json.load(f)
     
     print("✅ PASSED - Configuration files loaded successfully")
