@@ -1,0 +1,1 @@
+{"status":"healthy","service":"breezi-orchestration","components":{"audio_gateway":"ready","call_ingestor":"ready","stt_client":"ready","tts_client":"ready","nlu":"ready","conversation":"ready"}}

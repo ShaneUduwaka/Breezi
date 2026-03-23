@@ -16,7 +16,19 @@ class ConversationManager:
         self.state = None
         self.language = "english"  # Track detected language (english or sinhala_mixed)
 
-    def handle_message(self, text, session_id: str = None):
+    def reset_state(self, session_id: str = None):
+        """Clear the current IntentState to allow starting a brand new conversation flow."""
+        if session_id:
+            self.session_id = session_id
+        self.state = None
+
+    def is_state_complete(self) -> bool:
+        """Return True if the state is NOT None AND has no missing slots (or is just terminal)."""
+        if self.state is None:
+            return True # No active multi-turn state (e.g. fallback or simple intent handled)
+        return not self.state.missing_slots()
+
+    def handle_active_message(self, text, session_id: str = None):
         """Process a user utterance with CONTEXT-AWARE NLU.
 
         ``session_id`` is used to save and load context if a ContextMemory is

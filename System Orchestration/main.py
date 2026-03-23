@@ -11,7 +11,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from system.bootsrap import build_system
-from utils.test_data_loader import TestDataLoader
+from utils.test_data_loader import MockDataLoader
 
 
 def main():
@@ -29,7 +29,7 @@ def main():
     # Step 1: Load test configuration
     print("📋 Loading test scenarios from configuration...")
     try:
-        loader = TestDataLoader()
+        loader = MockDataLoader()
         print("✅ Test scenarios loaded successfully!\n")
     except FileNotFoundError as e:
         print(f"❌ Error: {e}")

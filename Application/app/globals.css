@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --breezi-primary: #FF701E;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  background: white;
+  color: #0f172a;
+}
+
+.card {
+  @apply bg-white rounded-2xl shadow-soft p-5;
+}
+
+.card-border {
+  border: 1px solid #e2e8f0;
+}

@@ -1,0 +1,164 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.3, pytest-9.0.2, pluggy-1.6.0
+rootdir: c:\Users\harry\OneDrive\Documents\GitHub\Breezi\System Orchestration
+plugins: anyio-4.12.1, asyncio-1.3.0, cov-7.0.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2 items
+
+test_websocket_client.py EE                                              [100%]
+
+=================================== ERRORS ====================================
+____________________ ERROR at setup of test_call_websocket ____________________
+file c:\Users\harry\OneDrive\Documents\GitHub\Breezi\System Orchestration\test_websocket_client.py, line 14
+  async def test_call_websocket(uri: str, session_id: str):
+      """
+      Test real-time conversation via WebSocket
+
+      Args:
+          uri: WebSocket URI (e.g., ws://localhost:8000/ws/call/test-session)
+          session_id: Session identifier
+      """
+
+      print(f"\n{'='*70}")
+      print(f"\U0001f3a4 Breezi WebSocket Call Test")
+      print(f"{'='*70}")
+      print(f"\U0001f4cd Connecting to: {uri}")
+      print(f"\U0001f194 Session ID: {session_id}")
+      print(f"\U0001f4a1 Type 'exit' or 'quit' to end the call")
+      print(f"{'='*70}\n")
+
+      try:
+          async with websockets.connect(uri) as websocket:
+              print("\u2705 Connected to server\\n")
+
+              # Receive initial greeting
+              message = await websocket.recv()
+              data = json.loads(message)
+              if data.get("type") == "greeting":
+                  print(f"\U0001f916 {data.get('message')}\\n")
+
+              turn_count = 0
+
+              # Conversation loop
+              while True:
+                  # Get user input
+                  user_input = input("\U0001f464 You: ").strip()
+
+                  if not user_input:
+                      print("\u26a0\ufe0f  Please enter something...\\n")
+                      continue
+
+                  if user_input.lower() in ["exit", "quit"]:
+                      print("\\n\U0001f44b Ending call...")
+                      await websocket.send(json.dumps({"type": "end"}))
+                      break
+
+                  turn_count += 1
+
+                  # Send message
+                  await websocket.send(json.dumps({
+                      "type": "text",
+                      "message": user_input,
+                  }))
+
+                  # Receive response
+                  response_msg = await websocket.recv()
+                  response_data = json.loads(response_msg)
+
+                  # Display response
+                  if response_data.get("type") == "response":
+                      print(f"\\n\U0001f916 Breezi: {response_data.get('message')}\\n")
+
+                      # Display state if available
+                      state = response_data.get("state", {})
+                      if state:
+                          print(f"\U0001f4ca State Update:")
+                          print(f"   Intent: {state.get('intent')}")
+                          print(f"   Slots: {state.get('slots')}")
+                          if state.get('missing_slots'):
+                              print(f"   \u23f3 Still waiting for: {', '.join(state.get('missing_slots'))}")
+                          print()
+
+                  elif response_data.get("type") == "error":
+                      print(f"\\n\u274c Error: {response_data.get('message')}\\n")
+
+              print(f"\\n\u2705 Call ended. Total turns: {turn_count}")
+
+      except ConnectionRefusedError:
+          print(f"\u274c Connection refused. Make sure server is running at {uri}")
+          print("\\n\U0001f4a1 Start server with: docker-compose -f docker-compose.mock.yml up -d")
+          sys.exit(1)
+
+      except Exception as e:
+          print(f"\\n\u274c Error: {e}")
+          sys.exit(1)
+E       fixture 'uri' not found
+>       available fixtures: _class_scoped_runner, _function_scoped_runner, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, anyio_backend, anyio_backend_name, anyio_backend_options, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, cov, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, monkeypatch, no_cover, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+c:\Users\harry\OneDrive\Documents\GitHub\Breezi\System Orchestration\test_websocket_client.py:14
+___________________ ERROR at setup of test_audio_websocket ____________________
+file c:\Users\harry\OneDrive\Documents\GitHub\Breezi\System Orchestration\test_websocket_client.py, line 98
+  async def test_audio_websocket(uri: str, session_id: str):
+      """
+      Test audio streaming via WebSocket
+
+      Args:
+          uri: WebSocket URI for audio
+          session_id: Session identifier
+      """
+
+      print(f"\n{'='*70}")
+      print(f"\U0001f3b5 Breezi WebSocket Audio Test")
+      print(f"{'='*70}")
+      print(f"\U0001f4cd Connecting to: {uri}")
+      print(f"\U0001f194 Session ID: {session_id}")
+      print(f"{'='*70}\n")
+
+      try:
+          async with websockets.connect(uri) as websocket:
+              print("\u2705 Connected to audio stream\\n")
+
+              # Send some test audio (placeholder)
+              test_audio = b"test_audio_data"
+
+              await websocket.send(json.dumps({
+                  "type": "audio",
+                  "data": test_audio.decode('latin-1'),
+              }))
+
+              print("\U0001f4e4 Sent test audio chunk\\n")
+
+              # Receive acknowledgment
+              response = await websocket.recv()
+              data = json.loads(response)
+              print(f"\U0001f4e5 Server response: {data}\\n")
+
+              print("\u2705 Audio endpoint test complete")
+
+      except Exception as e:
+          print(f"\u274c Error: {e}")
+          sys.exit(1)
+E       fixture 'uri' not found
+>       available fixtures: _class_scoped_runner, _function_scoped_runner, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, anyio_backend, anyio_backend_name, anyio_backend_options, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, cov, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, monkeypatch, no_cover, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+c:\Users\harry\OneDrive\Documents\GitHub\Breezi\System Orchestration\test_websocket_client.py:98
+============================== warnings summary ===============================
+utils\test_data_loader.py:11
+  c:\Users\harry\OneDrive\Documents\GitHub\Breezi\System Orchestration\utils\test_data_loader.py:11: PytestCollectionWarning: cannot collect test class 'TestDataLoader' because it has a __init__ constructor (from: interactive_test.py)
+    class TestDataLoader:
+
+utils\test_data_loader.py:11
+  c:\Users\harry\OneDrive\Documents\GitHub\Breezi\System Orchestration\utils\test_data_loader.py:11: PytestCollectionWarning: cannot collect test class 'TestDataLoader' because it has a __init__ constructor (from: test_slot_filling.py)
+    class TestDataLoader:
+
+utils\test_data_loader.py:11
+  c:\Users\harry\OneDrive\Documents\GitHub\Breezi\System Orchestration\utils\test_data_loader.py:11: PytestCollectionWarning: cannot collect test class 'TestDataLoader' because it has a __init__ constructor (from: utils/test_data_loader.py)
+    class TestDataLoader:
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+ERROR test_websocket_client.py::test_call_websocket
+ERROR test_websocket_client.py::test_audio_websocket
+======================== 3 warnings, 2 errors in 0.18s ========================

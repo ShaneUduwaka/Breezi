@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
 # 2. Install PyTorch (CPU)
 RUN pip install --no-cache-dir torch torchaudio --index-url https://download.pytorch.org/whl/cpu
 
-# 3. Install Other Deps
+# 3. Install Other Dependancies 
 RUN pip install --no-cache-dir \
     silero-vad \
     soundfile \

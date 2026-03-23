@@ -30,7 +30,18 @@ class TTSClient:
         """Connect to TTS service"""
         try:
             logger.info(f"🔊 Connecting to {self.provider} TTS...")
-            # In production: Initialize provider-specific client
+            if self.provider == "google":
+                from google.cloud import texttospeech
+                import os
+                api_key = os.getenv("GOOGLE_API_KEY")
+                
+                if api_key:
+                    self.tts_client = texttospeech.TextToSpeechAsyncClient(
+                        client_options={"api_key": api_key}
+                    )
+                else:
+                    self.tts_client = texttospeech.TextToSpeechAsyncClient()
+                    
             self.is_connected = True
             return True
         except Exception as e:
@@ -46,25 +57,40 @@ class TTSClient:
     ) -> AsyncGenerator[bytes, None]:
         """
         Real-time streaming synthesis
-        
-        Args:
-            text: Text to synthesize
-            session_id: Call session ID
-            language: Language code (e.g., en-US, si-LK)
-            voice: Voice name/ID (provider-specific)
-            
-        Yields:
-            bytes: Audio chunks
         """
         try:
             logger.debug(f"🔊 Starting TTS stream for session {session_id}")
-            logger.debug(f"    Text: {text[:100]}...")  # Log first 100 chars
+            logger.debug(f"    Text: {text[:100]}...")
             
-            # In production: Stream text to provider and yield audio
-            # For now, placeholder
-            # async for audio_chunk in self._synthesize_with_provider(text, language, voice):
-            #     yield audio_chunk
-            pass
+            if self.provider == "google":
+                from google.cloud import texttospeech
+                
+                voice_name = voice or self.set_voice(language)
+                synthesis_input = texttospeech.SynthesisInput(text=text)
+                
+                voice_params = texttospeech.VoiceSelectionParams(
+                    language_code=language,
+                    name=voice_name if voice_name else None
+                )
+                
+                audio_config = texttospeech.AudioConfig(
+                    audio_encoding=texttospeech.AudioEncoding.LINEAR16,
+                    sample_rate_hertz=self.config.get("sample_rate_hertz", 16000)
+                )
+                
+                response = await self.tts_client.synthesize_speech(
+                    input=synthesis_input,
+                    voice=voice_params,
+                    audio_config=audio_config
+                )
+                
+                # Yield the audio in chunks (simulate streaming)
+                audio_content = response.audio_content
+                chunk_size = 4000
+                for i in range(0, len(audio_content), chunk_size):
+                    yield audio_content[i:i+chunk_size]
+            else:
+                pass
         
         except Exception as e:
             logger.error(f"❌ TTS synthesis error: {e}")
@@ -79,11 +105,32 @@ class TTSClient:
         """Synthesize text to audio file"""
         try:
             logger.debug(f"🔊 Synthesizing to file: {output_path}")
-            # In production: Request synthesis from provider
-            # audio_content = await self._synthesize_with_provider(text, language, voice)
-            # with open(output_path, 'wb') as f:
-            #     f.write(audio_content)
-            return True
+            if self.provider == "google":
+                from google.cloud import texttospeech
+                
+                voice_name = voice or self.set_voice(language)
+                synthesis_input = texttospeech.SynthesisInput(text=text)
+                
+                voice_params = texttospeech.VoiceSelectionParams(
+                    language_code=language,
+                    name=voice_name if voice_name else None
+                )
+                
+                audio_config = texttospeech.AudioConfig(
+                    audio_encoding=texttospeech.AudioEncoding.LINEAR16,
+                    sample_rate_hertz=self.config.get("sample_rate_hertz", 16000)
+                )
+                
+                response = await self.tts_client.synthesize_speech(
+                    input=synthesis_input,
+                    voice=voice_params,
+                    audio_config=audio_config
+                )
+                
+                with open(output_path, "wb") as f:
+                    f.write(response.audio_content)
+                return True
+            return False
         except Exception as e:
             logger.error(f"❌ TTS file synthesis error: {e}")
             return False

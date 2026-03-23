@@ -12,7 +12,7 @@ import json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from system.bootsrap import build_system
-from utils.test_data_loader import TestDataLoader
+from utils.test_data_loader import MockDataLoader
 
 
 def run_test_scenario(scenario_name, loader, system):
@@ -21,7 +21,7 @@ def run_test_scenario(scenario_name, loader, system):
     
     Args:
         scenario_name: Name of scenario to run
-        loader: TestDataLoader instance
+        loader: MockDataLoader instance
         system: Built system from build_system()
     """
     scenario = loader.get_scenario(scenario_name)
@@ -89,7 +89,7 @@ def main():
     
     # Step 1: Load test configuration
     try:
-        loader = TestDataLoader()
+        loader = MockDataLoader()
         print("✅ Test scenarios loaded from testdata.JSON\n")
     except FileNotFoundError as e:
         print(f"❌ Error: {e}")

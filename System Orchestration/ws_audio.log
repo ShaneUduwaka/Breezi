@@ -1,0 +1,24 @@
+
+======================================================================
+Traceback (most recent call last):
+  File "c:\Users\harry\OneDrive\Documents\GitHub\Breezi\System Orchestration\test_websocket_client.py", line 159, in <module>
+    asyncio.run(main())
+    ~~~~~~~~~~~^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "c:\Users\harry\OneDrive\Documents\GitHub\Breezi\System Orchestration\test_websocket_client.py", line 152, in main
+    await test_audio_websocket(uri, session_id)
+  File "c:\Users\harry\OneDrive\Documents\GitHub\Breezi\System Orchestration\test_websocket_client.py", line 108, in test_audio_websocket
+    print(f"\U0001f3b5 Breezi WebSocket Audio Test")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f3b5' in position 0: character maps to <undefined>

@@ -1,5 +1,5 @@
 """
-TestDataLoader - Template-based test data configuration
+MockDataLoader - Template-based test data configuration
 Loads all test scenarios from testdata.JSON instead of hardcoding
 This ensures the system remains configuration-driven, not code-driven
 """
@@ -8,12 +8,12 @@ import json
 import os
 
 
-class TestDataLoader:
+class MockDataLoader:
     """Load test scenarios from configuration file"""
 
     def __init__(self, testdata_path=None):
         """
-        Initialize TestDataLoader
+        Initialize MockDataLoader
         
         Args:
             testdata_path: Path to testdata.JSON. If None, looks in Business input/
@@ -126,7 +126,7 @@ class TestDataLoader:
 
 # Example usage:
 if __name__ == "__main__":
-    loader = TestDataLoader()
+    loader = MockDataLoader()
     
     print("✅ Test scenarios loaded successfully!")
     loader.print_scenarios()

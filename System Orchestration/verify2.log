@@ -1,0 +1,40 @@
+⚠️ Using MOCK call ingestor for development
+⚠️ Using MOCK STT client for development
+⚠️ Using MOCK TTS client for development
+
+================================================================================
+🔍 SYSTEM VERIFICATION - Redis Removed
+================================================================================
+
+📦 TEST 1: Importing Core Modules
+--------------------------------------------------------------------------------
+  • Importing dialog.IntentRegistry... ✓
+  • Importing dialog.dialog_orchestrator... ✓
+  • Importing dialog.intent_state... ✓
+  • Importing system.conversation_manager... ✓
+  • Importing handlers.order_handlers... ✓
+  • Importing llm.fake_llm... ✓
+  • Importing nlu.fake_nlu... ✓
+
+💾 TEST 2: Memory Stores (In-Memory Only)
+--------------------------------------------------------------------------------
+  • Importing memory.context_memory... ✓
+  • Creating ContextMemory instance... ✓
+  • Testing save/load functionality... ✓
+  • Testing append_turn functionality... ✓
+  • Importing memory.rag_store... ✓
+  • Creating RagStore instance... ✓
+  • Testing put/get functionality... ✓
+  • Testing delete functionality... ✓
+
+🏗️  TEST 3: Building Complete System
+--------------------------------------------------------------------------------
+  • Importing system.bootsrap... ✓
+  • Building system with build_system()... ✓
+  • Verifying all system components... ✓
+
+💬 TEST 4: End-to-End Conversation Flow
+--------------------------------------------------------------------------------
+  • Processing user input (slot filling required)... ✓
+  • Checking conversation state... ✓
+  • Processing menu request... ✗ Error: Unexpected response!
