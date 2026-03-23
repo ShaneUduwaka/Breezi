@@ -28,6 +28,10 @@ class ConversationManager:
             return True # No active multi-turn state (e.g. fallback or simple intent handled)
         return not self.state.missing_slots()
 
+    def handle_message(self, text, session_id: str = None):
+        """Backward-compatible public entrypoint used across the codebase."""
+        return self.handle_active_message(text, session_id=session_id)
+
     def handle_active_message(self, text, session_id: str = None):
         """Process a user utterance with CONTEXT-AWARE NLU.
 

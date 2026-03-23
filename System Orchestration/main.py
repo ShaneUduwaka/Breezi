@@ -6,12 +6,31 @@ Template-based configuration - all test data comes from testdata.JSON
 
 import os
 import sys
+import builtins
 
 # Add current directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from system.bootsrap import build_system
 from utils.test_data_loader import MockDataLoader
+
+
+def print(*args, sep=" ", end="\n", file=None, flush=False):
+    """
+    Print text safely on Windows terminals that cannot encode Unicode output.
+    Falls back to replacement characters instead of crashing the app.
+    """
+    target = file or sys.stdout
+    text = sep.join(str(arg) for arg in args) + end
+    encoding = getattr(target, "encoding", None) or "utf-8"
+
+    try:
+        target.write(text)
+    except UnicodeEncodeError:
+        target.write(text.encode(encoding, errors="replace").decode(encoding, errors="replace"))
+
+    if flush:
+        target.flush()
 
 
 def main():
