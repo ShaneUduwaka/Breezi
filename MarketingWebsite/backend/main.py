@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api import contact
+# Import both the contact and newsletter routers from your api folder
+from api import contact, newsletter
 
 app = FastAPI(title="Breezi Marketing Website API")
 
@@ -13,8 +14,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include the contact router
+# Include the contact router (Original)
 app.include_router(contact.router, prefix="/api")
+
+# Include the newsletter router (New)
+app.include_router(newsletter.router, prefix="/api")
 
 @app.get("/")
 def read_root():
