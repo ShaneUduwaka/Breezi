@@ -1,0 +1,23 @@
+# Python & VS Code caches
+__pycache__/
+.vscode/
+*.pyc
+
+# Virtual Environments
+venv/
+env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# AI Datasets (Never push full customer data to public GitHub)
+*.jsonl
+llm.json
+restaurant_dataset.jsonl
+
+# Model Weights and Outputs (Too large for GitHub)
+outputs/
+*.gguf
+*.safetensors
+*.bin
+*.pt
