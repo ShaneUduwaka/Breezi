@@ -1,24 +1,27 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-# Import both the contact and newsletter routers from your api folder
-from api import contact, newsletter
+# Import contact, newsletter, and the new blogs router
+from api import contact, newsletter, blogs
 
 app = FastAPI(title="Breezi Marketing Website API")
 
-# Configure CORS so the frontend can communicate with the backend
+# Configure CORS so the frontend (Next.js) can communicate with this backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Next.js default port
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include the contact router (Original)
+# Register the contact router
 app.include_router(contact.router, prefix="/api")
 
-# Include the newsletter router (New)
+# Register the newsletter router
 app.include_router(newsletter.router, prefix="/api")
+
+# Register the new blogs router
+app.include_router(blogs.router, prefix="/api")
 
 @app.get("/")
 def read_root():
